@@ -28,7 +28,7 @@ The description of the change should be user-facing, describing which features w
 
 ## Git
 
-- When creating branches, prefix them with matt/ to indicate they came from me.
+- When creating branches, prefix them with davigiroux/ to indicate they came from me.
 
 ## Plans
 
