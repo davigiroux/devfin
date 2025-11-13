@@ -68,6 +68,7 @@ export interface Database {
           pis: number
           cofins: number
           total_impostos: number
+          exportacao: boolean
           usuario_id: string
           created_at: string
           updated_at: string
@@ -81,6 +82,7 @@ export interface Database {
           pis: number
           cofins: number
           total_impostos: number
+          exportacao?: boolean
           usuario_id: string
           created_at?: string
           updated_at?: string
@@ -94,6 +96,7 @@ export interface Database {
           pis?: number
           cofins?: number
           total_impostos?: number
+          exportacao?: boolean
           usuario_id?: string
           created_at?: string
           updated_at?: string

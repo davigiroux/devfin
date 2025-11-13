@@ -96,7 +96,7 @@ export default function SociosPage() {
   }
 
   const totalPercentual = socios.reduce((acc, s) => acc + s.percentual_participacao, 0)
-  const prolaboreMinimo = calcularProlaboreMinimo(socios.length)
+  const prolaboreMinimo = socios.length > 0 ? calcularProlaboreMinimo(socios.length) : 0
 
   if (loading) {
     return (

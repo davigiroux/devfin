@@ -11,6 +11,7 @@ export default function FaturamentosPage() {
   const [showForm, setShowForm] = useState(false)
   const [data, setData] = useState('')
   const [valorBruto, setValorBruto] = useState('')
+  const [exportacao, setExportacao] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -57,7 +58,7 @@ export default function FaturamentosPage() {
       }
 
       // Calcular impostos
-      const impostos = calcularImpostosLucroPresumido(valor)
+      const impostos = calcularImpostosLucroPresumido(valor, exportacao)
 
       // Inserir no banco
       const { error: insertError } = await supabase
@@ -70,6 +71,7 @@ export default function FaturamentosPage() {
           pis: impostos.pis,
           cofins: impostos.cofins,
           total_impostos: impostos.total,
+          exportacao,
           usuario_id: user.id,
         })
 
@@ -78,6 +80,7 @@ export default function FaturamentosPage() {
       // Resetar formulário
       setData('')
       setValorBruto('')
+      setExportacao(false)
       setShowForm(false)
 
       // Recarregar lista
@@ -147,11 +150,23 @@ export default function FaturamentosPage() {
                 placeholder="0,00"
               />
             </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="exportacao"
+                checked={exportacao}
+                onChange={(e) => setExportacao(e.target.checked)}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="exportacao" className="ml-2 block text-sm text-gray-700">
+                Exportação de serviços (isento de PIS e COFINS)
+              </label>
+            </div>
             {valorBruto && parseFloat(valorBruto) > 0 && (
               <div className="bg-blue-50 p-4 rounded-md">
                 <h3 className="font-medium text-blue-900 mb-2">Impostos Calculados:</h3>
                 {(() => {
-                  const impostos = calcularImpostosLucroPresumido(parseFloat(valorBruto))
+                  const impostos = calcularImpostosLucroPresumido(parseFloat(valorBruto), exportacao)
                   return (
                     <div className="text-sm text-blue-800 space-y-1">
                       <p>IRPJ: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.irpj)}</p>
@@ -161,6 +176,11 @@ export default function FaturamentosPage() {
                       <p className="font-bold pt-2 border-t border-blue-200">
                         Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.total)}
                       </p>
+                      {exportacao && (
+                        <p className="text-xs text-blue-700 pt-2 italic">
+                          * PIS e COFINS isentos (exportação de serviços)
+                        </p>
+                      )}
                     </div>
                   )
                 })()}
@@ -196,6 +216,9 @@ export default function FaturamentosPage() {
                     Data
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Exportação
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Valor Bruto
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -225,6 +248,15 @@ export default function FaturamentosPage() {
                     <tr key={faturamento.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(faturamento.data).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        {faturamento.exportacao ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Sim
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.valor_bruto))}
