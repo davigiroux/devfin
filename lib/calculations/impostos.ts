@@ -15,15 +15,19 @@ export const ALIQUOTAS = {
  * Calcula os impostos devidos com base no regime de Lucro Presumido
  *
  * @param valorBruto - Valor bruto do faturamento mensal
+ * @param exportacao - Se true, isenta PIS e COFINS (exportação de serviços)
  * @returns Objeto com os impostos calculados e o total
  *
  * @example
  * ```typescript
  * const impostos = calcularImpostosLucroPresumido(100000)
  * console.log(impostos.total) // 11330
+ *
+ * const impostosExportacao = calcularImpostosLucroPresumido(100000, true)
+ * console.log(impostosExportacao.total) // 7680 (sem PIS e COFINS)
  * ```
  */
-export function calcularImpostosLucroPresumido(valorBruto: number): ImpostosCalculados {
+export function calcularImpostosLucroPresumido(valorBruto: number, exportacao = false): ImpostosCalculados {
   if (valorBruto < 0) {
     throw new Error('Valor bruto não pode ser negativo')
   }
@@ -37,8 +41,9 @@ export function calcularImpostosLucroPresumido(valorBruto: number): ImpostosCalc
 
   const irpj = round(valorBruto * ALIQUOTAS.IRPJ)
   const csll = round(valorBruto * ALIQUOTAS.CSLL)
-  const pis = round(valorBruto * ALIQUOTAS.PIS)
-  const cofins = round(valorBruto * ALIQUOTAS.COFINS)
+  // Exportação de serviços é isenta de PIS e COFINS
+  const pis = exportacao ? 0 : round(valorBruto * ALIQUOTAS.PIS)
+  const cofins = exportacao ? 0 : round(valorBruto * ALIQUOTAS.COFINS)
   const total = round(irpj + csll + pis + cofins)
 
   return {
@@ -53,9 +58,14 @@ export function calcularImpostosLucroPresumido(valorBruto: number): ImpostosCalc
 /**
  * Calcula o percentual total de impostos sobre o faturamento
  *
+ * @param exportacao - Se true, exclui PIS e COFINS do cálculo
  * @returns Percentual total de impostos
  */
-export function getPercentualTotalImpostos(): number {
+export function getPercentualTotalImpostos(exportacao = false): number {
+  if (exportacao) {
+    // Exportação: apenas IRPJ e CSLL
+    return ALIQUOTAS.IRPJ + ALIQUOTAS.CSLL
+  }
   return Object.values(ALIQUOTAS).reduce((acc, aliquota) => acc + aliquota, 0)
 }
 
@@ -63,9 +73,10 @@ export function getPercentualTotalImpostos(): number {
  * Calcula o valor líquido após impostos
  *
  * @param valorBruto - Valor bruto do faturamento
+ * @param exportacao - Se true, isenta PIS e COFINS
  * @returns Valor líquido após dedução dos impostos
  */
-export function calcularValorLiquido(valorBruto: number): number {
-  const impostos = calcularImpostosLucroPresumido(valorBruto)
+export function calcularValorLiquido(valorBruto: number, exportacao = false): number {
+  const impostos = calcularImpostosLucroPresumido(valorBruto, exportacao)
   return Math.round((valorBruto - impostos.total) * 100) / 100
 }

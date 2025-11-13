@@ -105,4 +105,93 @@ describe('Cálculo de Impostos - Lucro Presumido', () => {
       expect(valorLiquido).toBe(10946.9) // 12345.67 - 1398.77 = 10946.9
     })
   })
+
+  describe('Exportação de Serviços (isenção de PIS e COFINS)', () => {
+    describe('calcularImpostosLucroPresumido com exportacao=true', () => {
+      it('deve isentar PIS e COFINS para exportação de R$ 100.000,00', () => {
+        const resultado = calcularImpostosLucroPresumido(100000, true)
+
+        expect(resultado.irpj).toBe(4800) // 4.8% - mantém
+        expect(resultado.csll).toBe(2880) // 2.88% - mantém
+        expect(resultado.pis).toBe(0) // isento
+        expect(resultado.cofins).toBe(0) // isento
+        expect(resultado.total).toBe(7680) // Apenas IRPJ + CSLL
+      })
+
+      it('deve isentar PIS e COFINS para exportação de R$ 50.000,00', () => {
+        const resultado = calcularImpostosLucroPresumido(50000, true)
+
+        expect(resultado.irpj).toBe(2400)
+        expect(resultado.csll).toBe(1440)
+        expect(resultado.pis).toBe(0)
+        expect(resultado.cofins).toBe(0)
+        expect(resultado.total).toBe(3840)
+      })
+
+      it('deve retornar zero para faturamento zero mesmo com exportação', () => {
+        const resultado = calcularImpostosLucroPresumido(0, true)
+
+        expect(resultado.irpj).toBe(0)
+        expect(resultado.csll).toBe(0)
+        expect(resultado.pis).toBe(0)
+        expect(resultado.cofins).toBe(0)
+        expect(resultado.total).toBe(0)
+      })
+
+      it('deve arredondar corretamente com exportação', () => {
+        const resultado = calcularImpostosLucroPresumido(12345.67, true)
+
+        expect(resultado.irpj).toBe(592.59)
+        expect(resultado.csll).toBe(355.56)
+        expect(resultado.pis).toBe(0)
+        expect(resultado.cofins).toBe(0)
+        expect(resultado.total).toBe(948.15) // 592.59 + 355.56
+      })
+
+      it('deve manter validação de valores negativos com exportação', () => {
+        expect(() => calcularImpostosLucroPresumido(-1000, true)).toThrow(
+          'Valor bruto não pode ser negativo'
+        )
+      })
+
+      it('deve manter validação de valores inválidos com exportação', () => {
+        expect(() => calcularImpostosLucroPresumido(NaN, true)).toThrow(
+          'Valor bruto deve ser um número válido'
+        )
+      })
+    })
+
+    describe('getPercentualTotalImpostos com exportacao=true', () => {
+      it('deve retornar percentual sem PIS e COFINS para exportação', () => {
+        const percentual = getPercentualTotalImpostos(true)
+
+        // 4.8% + 2.88% = 7.68%
+        expect(percentual).toBeCloseTo(0.0768, 4)
+      })
+
+      it('deve retornar percentual completo para operação nacional', () => {
+        const percentual = getPercentualTotalImpostos(false)
+
+        // 4.8% + 2.88% + 0.65% + 3% = 11.33%
+        expect(percentual).toBeCloseTo(0.1133, 4)
+      })
+    })
+
+    describe('calcularValorLiquido com exportacao=true', () => {
+      it('deve calcular valor líquido com isenção de PIS e COFINS', () => {
+        const valorBruto = 100000
+        const valorLiquido = calcularValorLiquido(valorBruto, true)
+
+        // R$ 100.000 - R$ 7.680 = R$ 92.320
+        expect(valorLiquido).toBe(92320)
+      })
+
+      it('deve calcular corretamente para valores decimais com exportação', () => {
+        const valorBruto = 12345.67
+        const valorLiquido = calcularValorLiquido(valorBruto, true)
+
+        expect(valorLiquido).toBe(11397.52) // 12345.67 - 948.15 = 11397.52
+      })
+    })
+  })
 })
