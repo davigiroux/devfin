@@ -4,13 +4,21 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcularImpostosLucroPresumido } from '@/lib/calculations/impostos'
 import { Faturamento } from '@/types'
+import DatePicker, { registerLocale } from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import CurrencyInput from 'react-currency-input-field'
+import { ptBR } from 'date-fns/locale'
+import { format } from 'date-fns'
+
+// Register Brazilian locale for date picker
+registerLocale('pt-BR', ptBR)
 
 export default function FaturamentosPage() {
   const [faturamentos, setFaturamentos] = useState<Faturamento[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [data, setData] = useState('')
-  const [valorBruto, setValorBruto] = useState('')
+  const [data, setData] = useState<Date | null>(null)
+  const [valorBruto, setValorBruto] = useState<number | undefined>(undefined)
   const [exportacao, setExportacao] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -52,20 +60,26 @@ export default function FaturamentosPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Usuário não autenticado')
 
-      const valor = parseFloat(valorBruto)
-      if (isNaN(valor) || valor < 0) {
+      if (!data) {
+        throw new Error('Data é obrigatória')
+      }
+
+      if (!valorBruto || valorBruto <= 0) {
         throw new Error('Valor inválido')
       }
 
+      // Format date as YYYY-MM-DD for database
+      const dataFormatada = format(data, 'yyyy-MM-dd')
+
       // Calcular impostos
-      const impostos = calcularImpostosLucroPresumido(valor, exportacao)
+      const impostos = calcularImpostosLucroPresumido(valorBruto, exportacao)
 
       // Inserir no banco
       const { error: insertError } = await supabase
         .from('faturamentos')
         .insert({
-          data,
-          valor_bruto: valor,
+          data: dataFormatada,
+          valor_bruto: valorBruto,
           irpj: impostos.irpj,
           csll: impostos.csll,
           pis: impostos.pis,
@@ -78,8 +92,8 @@ export default function FaturamentosPage() {
       if (insertError) throw insertError
 
       // Resetar formulário
-      setData('')
-      setValorBruto('')
+      setData(null)
+      setValorBruto(undefined)
       setExportacao(false)
       setShowForm(false)
 
@@ -128,26 +142,36 @@ export default function FaturamentosPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Data
               </label>
-              <input
-                type="date"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
+              <DatePicker
+                selected={data}
+                onChange={(date) => setData(date)}
+                dateFormat="dd/MM/yyyy"
+                locale="pt-BR"
+                placeholderText="Selecione a data"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                wrapperClassName="w-full"
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Valor Bruto (R$)
               </label>
-              <input
-                type="number"
-                step="0.01"
+              <CurrencyInput
+                id="valorBruto"
+                name="valorBruto"
+                placeholder="0,00"
                 value={valorBruto}
-                onChange={(e) => setValorBruto(e.target.value)}
+                decimalsLimit={2}
+                decimalSeparator=","
+                groupSeparator="."
+                onValueChange={(value) => setValorBruto(value ? parseFloat(value) : undefined)}
+                prefix="R$ "
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="0,00"
               />
             </div>
             <div className="flex items-center">
@@ -162,11 +186,11 @@ export default function FaturamentosPage() {
                 Exportação de serviços (isento de PIS e COFINS)
               </label>
             </div>
-            {valorBruto && parseFloat(valorBruto) > 0 && (
+            {valorBruto && valorBruto > 0 && (
               <div className="bg-blue-50 p-4 rounded-md">
                 <h3 className="font-medium text-blue-900 mb-2">Impostos Calculados:</h3>
                 {(() => {
-                  const impostos = calcularImpostosLucroPresumido(parseFloat(valorBruto), exportacao)
+                  const impostos = calcularImpostosLucroPresumido(valorBruto, exportacao)
                   return (
                     <div className="text-sm text-blue-800 space-y-1">
                       <p>IRPJ: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.irpj)}</p>
