@@ -80,3 +80,13 @@ export interface CaixaNecessario {
   despesas_compromissos: number
   despesas: DespesaMensal[]
 }
+
+// Re-export quarterly types
+export type {
+  QuarterDates,
+  QuarterOption,
+  AggregatedFaturamentos,
+  AggregatedDespesas,
+  QuarterlyData,
+  QuarterlyComparison
+} from '@/lib/calculations/quarterly'

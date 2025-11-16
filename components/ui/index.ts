@@ -14,3 +14,5 @@ export type { CurrencyInputProps } from './CurrencyInput'
 
 export { default as FormControl } from './FormControl'
 export type { FormControlProps } from './FormControl'
+
+export { PaymentBadge } from './PaymentBadge'
