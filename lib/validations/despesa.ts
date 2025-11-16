@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const despesaSchema = z.object({
   descricao: z.string().min(1, 'Descrição é obrigatória'),
   tipo: z.enum(['imposto', 'compromisso'], {
-    errorMap: () => ({ message: 'Tipo deve ser "imposto" ou "compromisso"' })
+    message: 'Tipo deve ser "imposto" ou "compromisso"'
   }),
   valor: z.number().min(0.01, 'Valor deve ser maior que zero'),
   dia_vencimento: z.number().int().min(1, 'Dia deve ser entre 1 e 31').max(31, 'Dia deve ser entre 1 e 31'),

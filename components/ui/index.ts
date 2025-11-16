@@ -5,7 +5,6 @@ export { default as Select } from './Select'
 export type { SelectProps } from './Select'
 
 export { default as Checkbox } from './Checkbox'
-export type { CheckboxProps } from './Checkbox'
 
 export { default as DateInput } from './DateInput'
 export type { DateInputProps } from './DateInput'

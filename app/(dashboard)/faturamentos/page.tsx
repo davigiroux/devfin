@@ -138,7 +138,7 @@ export default function FaturamentosPage() {
               </label>
               <DateInput
                 selected={data}
-                onChange={(date) => setData(date)}
+                onChange={(date: Date | null) => setData(date)}
                 placeholderText="Selecione a data"
                 required
               />
