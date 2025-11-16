@@ -43,3 +43,36 @@ export interface CalculoINSS {
   socios: INSSSocio[]
   total_inss: number
 }
+
+export interface DespesaMensal {
+  id: string
+  descricao: string
+  tipo: 'imposto' | 'compromisso'
+  valor: number
+  dia_vencimento: number
+  recorrente: boolean
+  mes_referencia: number | null
+  ano_referencia: number | null
+  ativa: boolean
+  usuario_id: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PagamentoDespesa {
+  id: string
+  despesa_id: string
+  mes_referencia: number
+  ano_referencia: number
+  pago: boolean
+  data_pagamento: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CaixaNecessario {
+  total_despesas: number
+  despesas_impostos: number
+  despesas_compromissos: number
+  despesas: DespesaMensal[]
+}
