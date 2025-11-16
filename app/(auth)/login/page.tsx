@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { loginSchema } from '@/lib/validations/auth'
+import { Input } from '@/components/ui'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -70,7 +71,7 @@ export default function LoginPage() {
               <label htmlFor="email" className="sr-only">
                 Email
               </label>
-              <input
+              <Input
                 id="email"
                 name="email"
                 type="email"
@@ -78,7 +79,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="rounded-none rounded-t-md sm:text-sm"
                 placeholder="Email"
               />
             </div>
@@ -86,7 +87,7 @@ export default function LoginPage() {
               <label htmlFor="password" className="sr-only">
                 Senha
               </label>
-              <input
+              <Input
                 id="password"
                 name="password"
                 type="password"
@@ -94,7 +95,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="rounded-none rounded-b-md sm:text-sm"
                 placeholder="Senha"
               />
             </div>

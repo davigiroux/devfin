@@ -39,6 +39,12 @@ export default async function DashboardLayout({
                   Faturamentos
                 </Link>
                 <Link
+                  href="/despesas"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Despesas
+                </Link>
+                <Link
                   href="/socios"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
