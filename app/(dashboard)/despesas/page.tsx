@@ -404,7 +404,7 @@ export default function DespesasPage() {
               </label>
               <DateInput
                 selected={effectiveFrom}
-                onChange={(date) => setEffectiveFrom(date)}
+                onChange={(date: Date | null) => setEffectiveFrom(date)}
                 placeholderText="Selecione a data"
                 required
               />

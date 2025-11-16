@@ -1,10 +1,8 @@
 import React from 'react'
 
-export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  // Checkbox doesn't need error state in current design
-}
 
-const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+
+const Checkbox = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className = '', ...props }, ref) => {
     const baseClasses = 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
 
