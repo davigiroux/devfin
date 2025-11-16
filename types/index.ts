@@ -54,6 +54,9 @@ export interface DespesaMensal {
   mes_referencia: number | null
   ano_referencia: number | null
   ativa: boolean
+  effective_from: string
+  version: number
+  previous_version_id: string | null
   usuario_id: string
   created_at: string
   updated_at: string
@@ -66,6 +69,7 @@ export interface PagamentoDespesa {
   ano_referencia: number
   pago: boolean
   data_pagamento: string | null
+  valor_pago: number | null
   created_at: string
   updated_at: string
 }

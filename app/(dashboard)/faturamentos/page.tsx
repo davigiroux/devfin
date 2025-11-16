@@ -4,14 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcularImpostosLucroPresumido } from '@/lib/calculations/impostos'
 import { Faturamento } from '@/types'
-import DatePicker, { registerLocale } from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
-import CurrencyInput from 'react-currency-input-field'
-import { ptBR } from 'date-fns/locale'
 import { format } from 'date-fns'
-
-// Register Brazilian locale for date picker
-registerLocale('pt-BR', ptBR)
+import { DateInput, CurrencyInput as CurrencyInputComponent, Checkbox } from '@/components/ui'
 
 export default function FaturamentosPage() {
   const [faturamentos, setFaturamentos] = useState<Faturamento[]>([])
@@ -142,45 +136,31 @@ export default function FaturamentosPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Data
               </label>
-              <DatePicker
+              <DateInput
                 selected={data}
                 onChange={(date) => setData(date)}
-                dateFormat="dd/MM/yyyy"
-                locale="pt-BR"
                 placeholderText="Selecione a data"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                wrapperClassName="w-full"
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Valor Bruto (R$)
               </label>
-              <CurrencyInput
+              <CurrencyInputComponent
                 id="valorBruto"
                 name="valorBruto"
                 placeholder="0,00"
                 value={valorBruto}
-                decimalsLimit={2}
-                decimalSeparator=","
-                groupSeparator="."
                 onValueChange={(value) => setValorBruto(value ? parseFloat(value) : undefined)}
-                prefix="R$ "
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div className="flex items-center">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="exportacao"
                 checked={exportacao}
                 onChange={(e) => setExportacao(e.target.checked)}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label htmlFor="exportacao" className="ml-2 block text-sm text-gray-700">
                 Exportação de serviços (isento de PIS e COFINS)

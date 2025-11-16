@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcularINSSSocios, calcularProlaboreMinimo } from '@/lib/calculations/inss'
 import { Socio } from '@/types'
+import { Input } from '@/components/ui'
 
 export default function SociosPage() {
   const [socios, setSocios] = useState<Socio[]>([])
@@ -134,39 +135,36 @@ export default function SociosPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nome Completo
               </label>
-              <input
+              <Input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 CPF
               </label>
-              <input
+              <Input
                 type="text"
                 value={cpf}
                 onChange={(e) => handleCPFChange(e.target.value)}
                 required
                 placeholder="000.000.000-00"
                 maxLength={14}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Percentual de Participação (%)
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 value={percentual}
                 onChange={(e) => setPercentual(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="0,00"
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -215,12 +213,11 @@ export default function SociosPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Valor Total do Pró-labore (R$)
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 value={valorProlabore}
                 onChange={(e) => setValorProlabore(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="0,00"
               />
             </div>

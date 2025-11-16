@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { DespesaMensal, PagamentoDespesa } from '@/types'
 import { calcularCaixaNecessario } from '@/lib/calculations/caixa'
-import CurrencyInput from 'react-currency-input-field'
+import { Input, Select, Checkbox, CurrencyInput as CurrencyInputComponent, DateInput } from '@/components/ui'
+import { format } from 'date-fns'
+import ExpenseHistoryModal from '@/components/ExpenseHistoryModal'
 
 export default function DespesasPage() {
   const [despesas, setDespesas] = useState<DespesaMensal[]>([])
@@ -13,6 +15,8 @@ export default function DespesasPage() {
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [editingDespesa, setEditingDespesa] = useState<DespesaMensal | null>(null)
+  const [viewingHistoryId, setViewingHistoryId] = useState<string | null>(null)
 
   // Current month view
   const now = new Date()
@@ -27,6 +31,7 @@ export default function DespesasPage() {
   const [recorrente, setRecorrente] = useState(true)
   const [mesReferencia, setMesReferencia] = useState<number>(now.getMonth() + 1)
   const [anoReferencia, setAnoReferencia] = useState<number>(now.getFullYear())
+  const [effectiveFrom, setEffectiveFrom] = useState<Date | null>(new Date(now.getFullYear(), now.getMonth(), 1))
 
   const supabase = createClient()
 
@@ -74,6 +79,31 @@ export default function DespesasPage() {
     }
   }
 
+  const startEdit = (despesa: DespesaMensal) => {
+    setEditingDespesa(despesa)
+    setDescricao(despesa.descricao)
+    setTipo(despesa.tipo)
+    setValor(despesa.valor)
+    setDiaVencimento(despesa.dia_vencimento)
+    setRecorrente(despesa.recorrente)
+    setMesReferencia(despesa.mes_referencia || now.getMonth() + 1)
+    setAnoReferencia(despesa.ano_referencia || now.getFullYear())
+    setEffectiveFrom(new Date())
+    setShowForm(true)
+  }
+
+  const cancelEdit = () => {
+    setEditingDespesa(null)
+    setDescricao('')
+    setTipo('imposto')
+    setValor(undefined)
+    setDiaVencimento(1)
+    setRecorrente(true)
+    setEffectiveFrom(new Date(now.getFullYear(), now.getMonth(), 1))
+    setShowForm(false)
+    setError('')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -99,33 +129,62 @@ export default function DespesasPage() {
         throw new Error('Despesas não recorrentes devem ter mês e ano de referência')
       }
 
-      const { error: insertError } = await supabase
-        .from('despesas_mensais')
-        .insert({
-          descricao,
-          tipo,
-          valor,
-          dia_vencimento: diaVencimento,
-          recorrente,
-          mes_referencia: recorrente ? null : mesReferencia,
-          ano_referencia: recorrente ? null : anoReferencia,
-          usuario_id: user.id,
-        })
+      if (!effectiveFrom) {
+        throw new Error('Data efetiva é obrigatória')
+      }
 
-      if (insertError) throw insertError
+      if (editingDespesa) {
+        // Editing: deactivate old version and create new version
+        const { error: deactivateError } = await supabase
+          .from('despesas_mensais')
+          .update({ ativa: false })
+          .eq('id', editingDespesa.id)
+
+        if (deactivateError) throw deactivateError
+
+        const { error: insertError } = await supabase
+          .from('despesas_mensais')
+          .insert({
+            descricao,
+            tipo,
+            valor,
+            dia_vencimento: diaVencimento,
+            recorrente,
+            mes_referencia: recorrente ? null : mesReferencia,
+            ano_referencia: recorrente ? null : anoReferencia,
+            effective_from: format(effectiveFrom, 'yyyy-MM-dd'),
+            version: editingDespesa.version + 1,
+            previous_version_id: editingDespesa.id,
+            usuario_id: user.id,
+          })
+
+        if (insertError) throw insertError
+      } else {
+        // Creating new expense
+        const { error: insertError } = await supabase
+          .from('despesas_mensais')
+          .insert({
+            descricao,
+            tipo,
+            valor,
+            dia_vencimento: diaVencimento,
+            recorrente,
+            mes_referencia: recorrente ? null : mesReferencia,
+            ano_referencia: recorrente ? null : anoReferencia,
+            effective_from: format(effectiveFrom, 'yyyy-MM-dd'),
+            usuario_id: user.id,
+          })
+
+        if (insertError) throw insertError
+      }
 
       // Reset form
-      setDescricao('')
-      setTipo('imposto')
-      setValor(undefined)
-      setDiaVencimento(1)
-      setRecorrente(true)
-      setShowForm(false)
+      cancelEdit()
 
       // Reload list
       loadDespesas()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao cadastrar despesa')
+      setError(err instanceof Error ? err.message : 'Erro ao salvar despesa')
     } finally {
       setSubmitting(false)
     }
@@ -153,12 +212,23 @@ export default function DespesasPage() {
       )
 
       if (pagamentoExistente) {
+        const updateData: {
+          pago: boolean
+          data_pagamento: string | null
+          valor_pago?: number
+        } = {
+          pago: !pagamentoExistente.pago,
+          data_pagamento: !pagamentoExistente.pago ? new Date().toISOString().split('T')[0] : null
+        }
+
+        // Snapshot valor when marking as paid
+        if (!pagamentoExistente.pago) {
+          updateData.valor_pago = despesa.valor
+        }
+
         const { error } = await supabase
           .from('pagamentos_despesas')
-          .update({
-            pago: !pagamentoExistente.pago,
-            data_pagamento: !pagamentoExistente.pago ? new Date().toISOString().split('T')[0] : null
-          })
+          .update(updateData)
           .eq('id', pagamentoExistente.id)
 
         if (error) throw error
@@ -170,7 +240,8 @@ export default function DespesasPage() {
             mes_referencia: mesView,
             ano_referencia: anoView,
             pago: true,
-            data_pagamento: new Date().toISOString().split('T')[0]
+            data_pagamento: new Date().toISOString().split('T')[0],
+            valor_pago: despesa.valor
           })
 
         if (error) throw error
@@ -189,7 +260,7 @@ export default function DespesasPage() {
     return pagamento?.pago || false
   }
 
-  const caixaNecessario = calcularCaixaNecessario(despesas, mesView, anoView)
+  const caixaNecessario = calcularCaixaNecessario(despesas, pagamentos, mesView, anoView)
 
   if (loading) {
     return (
@@ -207,7 +278,7 @@ export default function DespesasPage() {
           <p className="text-gray-600">Gerencie despesas recorrentes e únicas</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => showForm ? cancelEdit() : setShowForm(true)}
           className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
         >
           {showForm ? 'Cancelar' : 'Nova Despesa'}
@@ -239,10 +310,9 @@ export default function DespesasPage() {
       {/* Month/Year Selector */}
       <div className="mb-6 flex items-center gap-4">
         <label className="text-sm font-medium text-gray-700">Visualizar:</label>
-        <select
+        <Select
           value={mesView}
           onChange={(e) => setMesView(Number(e.target.value))}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
           <option value={1}>Janeiro</option>
           <option value={2}>Fevereiro</option>
@@ -256,20 +326,22 @@ export default function DespesasPage() {
           <option value={10}>Outubro</option>
           <option value={11}>Novembro</option>
           <option value={12}>Dezembro</option>
-        </select>
-        <input
+        </Select>
+        <Input
           type="number"
           value={anoView}
           onChange={(e) => setAnoView(Number(e.target.value))}
           min="2000"
           max="2100"
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-24"
+          className="w-24"
         />
       </div>
 
       {showForm && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Cadastrar Despesa</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">
+            {editingDespesa ? 'Editar Despesa (Nova Versão)' : 'Cadastrar Despesa'}
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -280,67 +352,68 @@ export default function DespesasPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Descrição
               </label>
-              <input
+              <Input
                 type="text"
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 placeholder="Ex: INSS, Aluguel, etc."
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Tipo
               </label>
-              <select
+              <Select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as 'imposto' | 'compromisso')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="imposto">Imposto</option>
                 <option value="compromisso">Compromisso</option>
-              </select>
+              </Select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Valor (R$)
               </label>
-              <CurrencyInput
+              <CurrencyInputComponent
                 id="valor"
                 name="valor"
                 placeholder="0,00"
                 value={valor}
-                decimalsLimit={2}
-                decimalSeparator=","
-                groupSeparator="."
                 onValueChange={(value) => setValor(value ? parseFloat(value) : undefined)}
-                prefix="R$ "
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Dia de Vencimento
               </label>
-              <input
+              <Input
                 type="number"
                 value={diaVencimento}
                 onChange={(e) => setDiaVencimento(Number(e.target.value))}
                 min="1"
                 max="31"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data Efetiva (a partir de)
+              </label>
+              <DateInput
+                selected={effectiveFrom}
+                onChange={(date) => setEffectiveFrom(date)}
+                placeholderText="Selecione a data"
+                required
               />
             </div>
             <div className="flex items-center">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="recorrente"
                 checked={recorrente}
                 onChange={(e) => setRecorrente(e.target.checked)}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label htmlFor="recorrente" className="ml-2 block text-sm text-gray-700">
                 Despesa recorrente (todos os meses)
@@ -352,10 +425,9 @@ export default function DespesasPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Mês
                   </label>
-                  <select
+                  <Select
                     value={mesReferencia}
                     onChange={(e) => setMesReferencia(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value={1}>Janeiro</option>
                     <option value={2}>Fevereiro</option>
@@ -369,19 +441,18 @@ export default function DespesasPage() {
                     <option value={10}>Outubro</option>
                     <option value={11}>Novembro</option>
                     <option value={12}>Dezembro</option>
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Ano
                   </label>
-                  <input
+                  <Input
                     type="number"
                     value={anoReferencia}
                     onChange={(e) => setAnoReferencia(Number(e.target.value))}
                     min="2000"
                     max="2100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -396,7 +467,7 @@ export default function DespesasPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={cancelEdit}
                 className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition"
               >
                 Cancelar
@@ -491,12 +562,27 @@ export default function DespesasPage() {
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => toggleDespesaAtiva(despesa)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        {despesa.ativa ? 'Desativar' : 'Ativar'}
-                      </button>
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => setViewingHistoryId(despesa.id)}
+                          className="text-purple-600 hover:text-purple-900"
+                        >
+                          Histórico
+                        </button>
+                        <button
+                          onClick={() => startEdit(despesa)}
+                          disabled={!despesa.ativa}
+                          className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => toggleDespesaAtiva(despesa)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          {despesa.ativa ? 'Desativar' : 'Ativar'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -515,6 +601,13 @@ export default function DespesasPage() {
           </div>
         )}
       </div>
+
+      {viewingHistoryId && (
+        <ExpenseHistoryModal
+          despesaId={viewingHistoryId}
+          onClose={() => setViewingHistoryId(null)}
+        />
+      )}
     </div>
   )
 }
