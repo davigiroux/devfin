@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { loginSchema } from '@/lib/validations/auth'
 import { Input } from '@/components/ui'
 
@@ -53,10 +54,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            DevFin
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <div className="flex justify-center">
+            <Image src="/logo.svg" alt="DevFin" width={160} height={40} priority />
+          </div>
+          <p className="mt-4 text-center text-sm text-gray-600">
             Gestão Financeira para sua Empresa
           </p>
         </div>

@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
