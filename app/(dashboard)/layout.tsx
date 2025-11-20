@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function DashboardLayout({
   children,
@@ -22,8 +23,8 @@ export default async function DashboardLayout({
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="text-xl font-bold text-indigo-600">
-                DevFin
+              <Link href="/dashboard" className="flex items-center">
+                <Image src="/logo.svg" alt="DevFin" width={160} height={40} priority />
               </Link>
               <div className="hidden md:flex space-x-4">
                 <Link
