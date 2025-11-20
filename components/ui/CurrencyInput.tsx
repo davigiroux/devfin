@@ -6,11 +6,18 @@ export interface CurrencyInputProps extends CurrencyInputFieldProps {
 }
 
 const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
-  ({ error, className = '', ...props }, ref) => {
+  ({ error, className = '', onValueChange, ...props }, ref) => {
     const baseClasses = 'w-full px-3 py-2 rounded-md bg-white focus:outline-none focus:ring-indigo-500 focus:z-10 text-black'
     const borderClasses = error
       ? 'border border-red-300 focus:border-red-500'
       : 'border border-gray-300 focus:border-indigo-500'
+
+    const handleValueChange = (value: string | undefined, name?: string, values?: any) => {
+      console.log('CurrencyInput onValueChange:', { value, name, values })
+      if (onValueChange) {
+        onValueChange(value, name, values)
+      }
+    }
 
     return (
       <CurrencyInputField
@@ -20,6 +27,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
         decimalSeparator=","
         groupSeparator="."
         prefix="R$ "
+        onValueChange={handleValueChange}
         className={`${baseClasses} ${borderClasses} ${className}`}
         {...props}
       />
