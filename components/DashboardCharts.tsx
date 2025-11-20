@@ -75,6 +75,7 @@ export default function DashboardCharts({
   const [startYear, setStartYear] = useState(currentDate.getFullYear())
   const [endMonth, setEndMonth] = useState(currentDate.getMonth())
   const [endYear, setEndYear] = useState(currentDate.getFullYear())
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
 
   const filteredData = useMemo(() => {
     // Filter faturamentos by date range
@@ -233,12 +234,18 @@ export default function DashboardCharts({
   // Tax payment schedule (revenue in month X -> tax paid in month X+1)
   const taxPaymentSchedule = useMemo(() => {
     return filteredData.map((d) => {
+      const paymentYear = d.monthNum === 12 ? d.year + 1 : d.year
+      const paymentMonthNum = d.monthNum === 12 ? 1 : d.monthNum + 1
       return {
         earningMonth: `${d.month}/${d.year}`,
         paymentMonth:
           d.monthNum === 12
             ? `Jan/${d.year + 1}`
             : `${MONTHS[d.monthNum]}/${d.year}`,
+        paymentYear,
+        paymentMonthNum,
+        earningYear: d.year,
+        earningMonthNum: d.monthNum,
         irpj: d.irpj,
         csll: d.csll,
         pis: d.pis,
@@ -267,6 +274,37 @@ export default function DashboardCharts({
       style: 'currency',
       currency: 'BRL',
     }).format(value)
+  }
+
+  const toggleRow = (key: string) => {
+    const newExpanded = new Set(expandedRows)
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key)
+    } else {
+      newExpanded.add(key)
+    }
+    setExpandedRows(newExpanded)
+  }
+
+  const getDespesasForMonth = (year: number, month: number) => {
+    return despesas.filter((d) => {
+      if (!d.ativa) return false
+
+      if (d.recorrente) {
+        const effectiveFrom = parseISO(d.effective_from)
+        const effectiveMonth = effectiveFrom.getMonth() + 1
+        const effectiveYear = effectiveFrom.getFullYear()
+
+        // Check if this month/year is after or equal to effective date
+        if (year < effectiveYear) return false
+        if (year === effectiveYear && month < effectiveMonth) return false
+
+        return true
+      } else {
+        // One-time expense
+        return d.mes_referencia === month && d.ano_referencia === year
+      }
+    })
   }
 
   return (
@@ -503,7 +541,7 @@ export default function DashboardCharts({
       {/* Tax Payment Schedule */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <h3 className="text-lg font-semibold mb-2">
-          Cronograma de Pagamento de Impostos
+          Cronograma de Pagamento de Impostos e Despesas
         </h3>
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
           <p className="text-sm text-yellow-800">
@@ -515,6 +553,9 @@ export default function DashboardCharts({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-10">
+
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Faturamento
                 </th>
@@ -541,35 +582,130 @@ export default function DashboardCharts({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {taxPaymentSchedule.map((item, idx) => (
-                <tr key={idx}>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                    {item.earningMonth}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600">
-                    {item.paymentMonth}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
-                    {formatCurrency(item.revenue)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
-                    {formatCurrency(item.irpj)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
-                    {formatCurrency(item.csll)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
-                    {formatCurrency(item.pis)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
-                    {formatCurrency(item.cofins)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-purple-600">
-                    {formatCurrency(item.total)}
-                  </td>
-                </tr>
-              ))}
+            <tbody className="bg-white">
+              {taxPaymentSchedule.map((item, idx) => {
+                const rowKey = `${item.paymentYear}-${item.paymentMonthNum}`
+                const isExpanded = expandedRows.has(rowKey)
+                const monthDespesas = getDespesasForMonth(
+                  item.paymentYear,
+                  item.paymentMonthNum
+                )
+
+                return (
+                  <>
+                    <tr
+                      key={idx}
+                      className="border-t border-gray-200 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => toggleRow(rowKey)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        <svg
+                          className={`w-5 h-5 transition-transform ${
+                            isExpanded ? 'rotate-90' : ''
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {item.earningMonth}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600">
+                        {item.paymentMonth}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
+                        {formatCurrency(item.revenue)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                        {formatCurrency(item.irpj)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                        {formatCurrency(item.csll)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                        {formatCurrency(item.pis)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                        {formatCurrency(item.cofins)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-purple-600">
+                        {formatCurrency(item.total)}
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${idx}-detail`} className="bg-gray-50">
+                        <td colSpan={9} className="px-4 py-4">
+                          <div className="ml-8">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                              Despesas de {item.paymentMonth}
+                            </h4>
+                            {monthDespesas.length > 0 ? (
+                              <div className="space-y-2">
+                                {monthDespesas.map((despesa) => (
+                                  <div
+                                    key={despesa.id}
+                                    className="flex items-center justify-between py-2 px-3 bg-white rounded border border-gray-200"
+                                  >
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-gray-900">
+                                        {despesa.descricao}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {despesa.tipo === 'imposto'
+                                          ? 'Imposto'
+                                          : 'Compromisso'}{' '}
+                                        •{' '}
+                                        {despesa.recorrente
+                                          ? 'Recorrente'
+                                          : 'Único'}{' '}
+                                        • Venc: dia {despesa.dia_vencimento}
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={`text-sm font-semibold ${
+                                        despesa.tipo === 'imposto'
+                                          ? 'text-red-600'
+                                          : 'text-orange-600'
+                                      }`}
+                                    >
+                                      {formatCurrency(Number(despesa.valor))}
+                                    </div>
+                                  </div>
+                                ))}
+                                <div className="mt-3 pt-3 border-t border-gray-300 flex justify-between items-center">
+                                  <span className="text-sm font-semibold text-gray-700">
+                                    Total de Despesas
+                                  </span>
+                                  <span className="text-sm font-bold text-gray-900">
+                                    {formatCurrency(
+                                      monthDespesas.reduce(
+                                        (acc, d) => acc + Number(d.valor),
+                                        0
+                                      )
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500 italic">
+                                Nenhuma despesa cadastrada para este mês
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )
+              })}
             </tbody>
           </table>
         </div>
