@@ -15,6 +15,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     return (
       <CurrencyInputField
         ref={ref}
+        allowDecimals={true}
         decimalsLimit={2}
         decimalSeparator=","
         groupSeparator="."
