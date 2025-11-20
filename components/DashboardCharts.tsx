@@ -236,6 +236,27 @@ export default function DashboardCharts({
     return filteredData.map((d) => {
       const paymentYear = d.monthNum === 12 ? d.year + 1 : d.year
       const paymentMonthNum = d.monthNum === 12 ? 1 : d.monthNum + 1
+
+      // Get despesas for payment month
+      const monthDespesas = despesas.filter((desp) => {
+        if (!desp.ativa) return false
+
+        if (desp.recorrente) {
+          const effectiveFrom = parseISO(desp.effective_from)
+          const effectiveMonth = effectiveFrom.getMonth() + 1
+          const effectiveYear = effectiveFrom.getFullYear()
+
+          if (paymentYear < effectiveYear) return false
+          if (paymentYear === effectiveYear && paymentMonthNum < effectiveMonth) return false
+
+          return true
+        } else {
+          return desp.mes_referencia === paymentMonthNum && desp.ano_referencia === paymentYear
+        }
+      })
+
+      const totalDespesas = monthDespesas.reduce((acc, desp) => acc + Number(desp.valor), 0)
+
       return {
         earningMonth: `${d.month}/${d.year}`,
         paymentMonth:
@@ -250,11 +271,12 @@ export default function DashboardCharts({
         csll: d.csll,
         pis: d.pis,
         cofins: d.cofins,
-        total: d.totalTax,
+        despesas: totalDespesas,
+        total: d.totalTax + totalDespesas,
         revenue: d.revenue,
       }
     })
-  }, [filteredData])
+  }, [filteredData, despesas])
 
   // Summary totals
   const totals = useMemo(() => {
@@ -578,6 +600,9 @@ export default function DashboardCharts({
                   COFINS
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Despesas
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                   Total
                 </th>
               </tr>
@@ -636,13 +661,16 @@ export default function DashboardCharts({
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
                         {formatCurrency(item.cofins)}
                       </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-orange-600">
+                        {formatCurrency(item.despesas)}
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-purple-600">
                         {formatCurrency(item.total)}
                       </td>
                     </tr>
                     {isExpanded && (
                       <tr key={`${idx}-detail`} className="bg-gray-50">
-                        <td colSpan={9} className="px-4 py-4">
+                        <td colSpan={10} className="px-4 py-4">
                           <div className="ml-8">
                             <h4 className="text-sm font-semibold text-gray-700 mb-3">
                               Despesas de {item.paymentMonth}
@@ -680,19 +708,6 @@ export default function DashboardCharts({
                                     </div>
                                   </div>
                                 ))}
-                                <div className="mt-3 pt-3 border-t border-gray-300 flex justify-between items-center">
-                                  <span className="text-sm font-semibold text-gray-700">
-                                    Total de Despesas
-                                  </span>
-                                  <span className="text-sm font-bold text-gray-900">
-                                    {formatCurrency(
-                                      monthDespesas.reduce(
-                                        (acc, d) => acc + Number(d.valor),
-                                        0
-                                      )
-                                    )}
-                                  </span>
-                                </div>
                               </div>
                             ) : (
                               <p className="text-sm text-gray-500 italic">
