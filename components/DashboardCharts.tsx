@@ -725,6 +725,90 @@ export default function DashboardCharts({
           </table>
         </div>
       </div>
+
+      {/* Net Earnings After Deductions */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold mb-4">
+          Saldo Líquido por Mês
+        </h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Faturamento restante após impostos e despesas
+        </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Mês
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Faturamento
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Impostos
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Despesas
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Saldo Líquido
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredData.map((item, idx) => {
+                const net = item.revenue - item.totalTax - item.expenses
+                return (
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {item.month}/{item.year}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
+                      {formatCurrency(item.revenue)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-purple-600">
+                      -{formatCurrency(item.totalTax)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-orange-600">
+                      -{formatCurrency(item.expenses)}
+                    </td>
+                    <td
+                      className={`px-4 py-3 whitespace-nowrap text-sm text-right font-semibold ${
+                        net >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {formatCurrency(net)}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+            <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+              <tr>
+                <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                  Total
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                  {formatCurrency(totals.revenue)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-purple-600">
+                  -{formatCurrency(totals.tax)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-orange-600">
+                  -{formatCurrency(totals.expenses)}
+                </td>
+                <td
+                  className={`px-4 py-3 whitespace-nowrap text-sm text-right font-bold ${
+                    totals.net >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
+                  {formatCurrency(totals.net)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
