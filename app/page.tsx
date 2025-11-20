@@ -28,7 +28,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-3xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-2">Cálculo de Impostos</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-900">Cálculo de Impostos</h3>
             <p className="text-gray-600">
               Calcule automaticamente IRPJ, CSLL, PIS e COFINS baseado no Lucro Presumido
             </p>
@@ -36,7 +36,7 @@ export default function HomePage() {
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-3xl mb-4">👥</div>
-            <h3 className="text-xl font-bold mb-2">Gestão de Sócios</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-900">Gestão de Sócios</h3>
             <p className="text-gray-600">
               Gerencie sócios e calcule INSS pró-labore proporcional automaticamente
             </p>
@@ -44,7 +44,7 @@ export default function HomePage() {
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-3xl mb-4">💰</div>
-            <h3 className="text-xl font-bold mb-2">Faturamentos</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-900">Faturamentos</h3>
             <p className="text-gray-600">
               Registre e acompanhe seus faturamentos mensais com impostos calculados
             </p>

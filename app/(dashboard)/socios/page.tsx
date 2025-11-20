@@ -124,7 +124,7 @@ export default function SociosPage() {
 
       {showForm && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Cadastrar Sócio</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Cadastrar Sócio</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
