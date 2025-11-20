@@ -152,7 +152,7 @@ export default function FaturamentosPage() {
                 name="valorBruto"
                 placeholder="0,00"
                 value={valorBruto}
-                onValueChange={(value) => setValorBruto(value ? parseFloat(value) : undefined)}
+                onValueChange={(value, name, values) => setValorBruto(values?.float ?? undefined)}
                 required
               />
             </div>
