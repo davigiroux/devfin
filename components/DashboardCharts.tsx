@@ -333,7 +333,7 @@ export default function DashboardCharts({
     <div className="space-y-6">
       {/* Filters */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">Período</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">Período</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -438,7 +438,7 @@ export default function DashboardCharts({
 
       {/* Revenue & Tax Trend */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">
           Receita e Impostos por Mês
         </h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -469,7 +469,7 @@ export default function DashboardCharts({
       {/* Tax Breakdown & Expense Breakdown */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold mb-4">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
             Distribuição de Impostos
           </h3>
           {taxBreakdown.length > 0 ? (
@@ -505,7 +505,7 @@ export default function DashboardCharts({
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold mb-4">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
             Distribuição de Despesas
           </h3>
           {expenseBreakdown.length > 0 ? (
@@ -545,7 +545,7 @@ export default function DashboardCharts({
 
       {/* Cash Flow Chart */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">Fluxo de Caixa Mensal</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">Fluxo de Caixa Mensal</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={filteredData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -562,7 +562,7 @@ export default function DashboardCharts({
 
       {/* Tax Payment Schedule */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-2">
+        <h3 className="text-lg font-semibold mb-2 text-gray-900">
           Cronograma de Pagamento de Impostos e Despesas
         </h3>
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
@@ -575,34 +575,34 @@ export default function DashboardCharts({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-10">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase w-10">
 
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                   Faturamento
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                   Pagar em
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Receita
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   IRPJ
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   CSLL
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   PIS
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   COFINS
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Despesas
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Total
                 </th>
               </tr>
@@ -728,7 +728,7 @@ export default function DashboardCharts({
 
       {/* Net Earnings After Deductions */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">
           Saldo Líquido por Mês
         </h3>
         <p className="text-sm text-gray-600 mb-4">
@@ -738,19 +738,19 @@ export default function DashboardCharts({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                   Mês
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Faturamento
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Impostos
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Despesas
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   Saldo Líquido
                 </th>
               </tr>

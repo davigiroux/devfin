@@ -164,19 +164,19 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
                     <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                             Mês/Ano
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                             Versão
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                             Valor Pago
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                             Status
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                             Data Pagamento
                           </th>
                         </tr>
