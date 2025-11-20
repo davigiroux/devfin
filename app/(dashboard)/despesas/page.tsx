@@ -381,7 +381,7 @@ export default function DespesasPage() {
                 name="valor"
                 placeholder="0,00"
                 value={valor}
-                onValueChange={(value) => setValor(value ? parseFloat(value) : undefined)}
+                onValueChange={(value, name, values) => setValor(values?.float ?? undefined)}
                 required
               />
             </div>
