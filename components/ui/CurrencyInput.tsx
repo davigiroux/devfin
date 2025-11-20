@@ -12,15 +12,28 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       ? 'border border-red-300 focus:border-red-500'
       : 'border border-gray-300 focus:border-indigo-500'
 
+    // Transform raw value to add decimal separator automatically (calculator style)
+    const transformRawValue = (rawValue: string): string => {
+      // Remove all non-digits
+      const digits = rawValue.replace(/\D/g, '')
+      if (!digits) return ''
+
+      // Treat last 2 digits as cents (Brazilian calculator style)
+      const cents = digits.slice(-2).padStart(2, '0')
+      const reais = digits.slice(0, -2) || '0'
+
+      return `${reais}.${cents}`
+    }
+
     return (
       <CurrencyInputField
         ref={ref}
         allowDecimals={true}
         decimalsLimit={2}
-        fixedDecimalLength={2}
         decimalSeparator=","
         groupSeparator="."
         prefix="R$ "
+        transformRawValue={transformRawValue}
         className={`${baseClasses} ${borderClasses} ${className}`}
         {...props}
       />
