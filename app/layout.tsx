@@ -14,7 +14,10 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "DevFin - Gestão Financeira",
+  title: {
+    default: "DevFin",
+    template: "%s | DevFin",
+  },
   description: "Gestão Financeira para Empresas no Regime de Lucro Presumido",
   icons: {
     icon: '/favicon.svg',
