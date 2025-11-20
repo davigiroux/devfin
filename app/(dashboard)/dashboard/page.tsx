@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Metadata } from 'next'
+import DashboardCharts from '@/components/DashboardCharts'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -12,24 +13,32 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Buscar dados do usuário
+  // Fetch user data
   const { data: userData } = await supabase
     .from('usuarios')
     .select('*')
     .eq('id', user!.id)
     .single()
 
-  // Buscar faturamentos recentes
-  const { data: faturamentos, count: totalFaturamentos } = await supabase
+  // Fetch all faturamentos for charts
+  const { data: faturamentos } = await supabase
     .from('faturamentos')
-    .select('*', { count: 'exact' })
+    .select('*')
     .eq('usuario_id', user!.id)
-    .order('data', { ascending: false })
-    .limit(5)
+    .order('data', { ascending: true })
 
-  // Calcular totais
-  const totalBruto = faturamentos?.reduce((acc, f) => acc + Number(f.valor_bruto), 0) || 0
-  const totalImpostos = faturamentos?.reduce((acc, f) => acc + Number(f.total_impostos), 0) || 0
+  // Fetch all despesas
+  const { data: despesas } = await supabase
+    .from('despesas_mensais')
+    .select('*')
+    .eq('usuario_id', user!.id)
+    .order('created_at', { ascending: false })
+
+  // Fetch all pagamentos
+  const { data: pagamentos } = await supabase
+    .from('pagamentos_despesas')
+    .select('*')
+    .order('ano_referencia', { ascending: false })
 
   return (
     <div>
@@ -37,119 +46,63 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold text-gray-900">
           Bem-vindo, {userData?.nome_completo || 'Usuário'}!
         </h1>
-        <p className="text-gray-600">Visão geral da sua empresa</p>
+        <p className="text-gray-600">Dashboard financeiro completo</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
-            Total de Faturamentos
-          </div>
-          <div className="text-3xl font-bold text-gray-900">
-            {totalFaturamentos || 0}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
-            Faturamento Bruto
-          </div>
-          <div className="text-3xl font-bold text-green-600">
-            {new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            }).format(totalBruto)}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
-            Total de Impostos
-          </div>
-          <div className="text-3xl font-bold text-red-600">
-            {new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            }).format(totalImpostos)}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            Faturamentos Recentes
-          </h2>
+      {faturamentos && faturamentos.length > 0 ? (
+        <DashboardCharts
+          faturamentos={faturamentos}
+          despesas={despesas || []}
+          pagamentos={pagamentos || []}
+        />
+      ) : (
+        <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center">
+          <p className="text-gray-500 mb-4">
+            Nenhum faturamento cadastrado ainda
+          </p>
+          <p className="text-gray-400 text-sm mb-6">
+            Cadastre seus faturamentos para visualizar o dashboard
+          </p>
           <Link
             href="/faturamentos"
-            className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+            className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
           >
-            Ver todos
+            Cadastrar Faturamento
           </Link>
         </div>
+      )}
 
-        {faturamentos && faturamentos.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valor Bruto
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Impostos
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Líquido
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {faturamentos.map((faturamento) => {
-                  const liquido = Number(faturamento.valor_bruto) - Number(faturamento.total_impostos)
-                  return (
-                    <tr key={faturamento.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(faturamento.data).toLocaleDateString('pt-BR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(Number(faturamento.valor_bruto))}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(Number(faturamento.total_impostos))}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(liquido)}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Nenhum faturamento cadastrado ainda</p>
-            <Link
-              href="/faturamentos"
-              className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
-            >
-              Cadastrar Faturamento
-            </Link>
-          </div>
-        )}
+      {/* Quick Links */}
+      <div className="grid md:grid-cols-3 gap-6 mt-8">
+        <Link
+          href="/faturamentos"
+          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 transition"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Faturamentos
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Cadastrar e gerenciar receitas mensais
+          </p>
+        </Link>
+        <Link
+          href="/despesas"
+          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 transition"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Despesas</h3>
+          <p className="text-gray-600 text-sm">
+            Controlar despesas e compromissos
+          </p>
+        </Link>
+        <Link
+          href="/socios"
+          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 transition"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Sócios</h3>
+          <p className="text-gray-600 text-sm">
+            Gerenciar sócios e distribuição de lucros
+          </p>
+        </Link>
       </div>
     </div>
   )
