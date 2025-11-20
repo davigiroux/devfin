@@ -15,12 +15,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     return (
       <CurrencyInputField
         ref={ref}
-        allowDecimals={true}
-        decimalsLimit={2}
-        fixedDecimalLength={2}
-        decimalSeparator=","
-        groupSeparator="."
-        prefix="$ "
+        intlConfig={{ locale: 'pt-BR', currency: 'BRL' }}
         className={`${baseClasses} ${borderClasses} ${className}`}
         {...props}
       />
