@@ -1,5 +1,5 @@
 import React from 'react'
-import CurrencyInputField, { CurrencyInputProps as CurrencyInputFieldProps } from 'react-currency-input-field'
+import CurrencyInputField, { CurrencyInputProps as CurrencyInputFieldProps, CurrencyInputOnChangeValues } from 'react-currency-input-field'
 
 export interface CurrencyInputProps extends CurrencyInputFieldProps {
   error?: boolean
@@ -12,7 +12,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       ? 'border border-red-300 focus:border-red-500'
       : 'border border-gray-300 focus:border-indigo-500'
 
-    const handleValueChange = (value: string | undefined, name?: string, values?: any) => {
+    const handleValueChange = (value: string | undefined, name?: string, values?: CurrencyInputOnChangeValues) => {
       console.log('CurrencyInput onValueChange:', { value, name, values })
       if (onValueChange) {
         onValueChange(value, name, values)
