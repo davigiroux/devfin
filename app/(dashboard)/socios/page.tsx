@@ -124,7 +124,7 @@ export default function SociosPage() {
 
       {showForm && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Cadastrar Sócio</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Cadastrar Sócio</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -193,11 +193,11 @@ export default function SociosPage() {
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold mb-2">Total de Sócios</h3>
+          <h3 className="text-lg font-bold mb-2 text-gray-900">Total de Sócios</h3>
           <p className="text-3xl font-bold text-indigo-600">{socios.length}</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold mb-2">Pró-labore Mínimo Recomendado</h3>
+          <h3 className="text-lg font-bold mb-2 text-gray-900">Pró-labore Mínimo Recomendado</h3>
           <p className="text-3xl font-bold text-green-600">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(prolaboreMinimo)}
           </p>
@@ -207,7 +207,7 @@ export default function SociosPage() {
 
       {socios.length > 0 && totalPercentual === 100 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Calcular INSS Pró-labore</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900">Calcular INSS Pró-labore</h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -266,13 +266,13 @@ export default function SociosPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Nome
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     CPF
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Participação
                   </th>
                 </tr>
