@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { calcularImpostosLucroPresumido } from '@/lib/calculations/impostos'
 import { Faturamento } from '@/types'
 import { format } from 'date-fns'
-import { DateInput, CurrencyInput as CurrencyInputComponent, Checkbox } from '@/components/ui'
+import { DateInput, CurrencyInput, Checkbox } from '@/components/ui'
 
 export default function FaturamentosPage() {
   const [faturamentos, setFaturamentos] = useState<Faturamento[]>([])
@@ -147,7 +147,7 @@ export default function FaturamentosPage() {
               <label className="block text-sm font-medium text-foreground mb-1">
                 Valor Bruto (R$)
               </label>
-              <CurrencyInputComponent
+              <CurrencyInput
                 id="valorBruto"
                 name="valorBruto"
                 placeholder="0,00"
