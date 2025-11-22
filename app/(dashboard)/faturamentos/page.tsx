@@ -103,7 +103,7 @@ export default function FaturamentosPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Carregando...</div>
+        <div className="text-muted-foreground">Carregando...</div>
       </div>
     )
   }
@@ -112,28 +112,28 @@ export default function FaturamentosPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Faturamentos</h1>
-          <p className="text-gray-600">Gerencie seus faturamentos mensais</p>
+          <h1 className="text-3xl font-bold text-foreground">Faturamentos</h1>
+          <p className="text-muted-foreground">Gerencie seus faturamentos mensais</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+          className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
         >
           {showForm ? 'Cancelar' : 'Novo Faturamento'}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">Cadastrar Faturamento</h2>
+        <div className="bg-card rounded-lg shadow-sm border p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-foreground">Cadastrar Faturamento</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              <div className="bg-destructive border border-destructive text-destructive px-4 py-3 rounded">
                 {error}
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Data
               </label>
               <DateInput
@@ -144,7 +144,7 @@ export default function FaturamentosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Valor Bruto (R$)
               </label>
               <CurrencyInputComponent
@@ -162,7 +162,7 @@ export default function FaturamentosPage() {
                 checked={exportacao}
                 onChange={(e) => setExportacao(e.target.checked)}
               />
-              <label htmlFor="exportacao" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="exportacao" className="ml-2 block text-sm text-foreground">
                 Exportação de serviços (isento de PIS e COFINS)
               </label>
             </div>
@@ -194,14 +194,14 @@ export default function FaturamentosPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition disabled:opacity-50"
               >
                 {submitting ? 'Salvando...' : 'Salvar'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition"
+                className="bg-secondary text-foreground px-6 py-2 rounded-md hover:bg-muted transition"
               >
                 Cancelar
               </button>
@@ -210,47 +210,47 @@ export default function FaturamentosPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-card rounded-lg shadow-sm border">
         {faturamentos.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Data
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Exportação
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Valor Bruto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     IRPJ
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     CSLL
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     PIS
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     COFINS
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Total Impostos
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Líquido
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {faturamentos.map((faturamento) => {
                   const liquido = Number(faturamento.valor_bruto) - Number(faturamento.total_impostos)
                   return (
                     <tr key={faturamento.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {new Date(faturamento.data).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
@@ -259,28 +259,28 @@ export default function FaturamentosPage() {
                             Sim
                           </span>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.valor_bruto))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.irpj))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.csll))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.pis))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.cofins))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-destructive font-medium">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.total_impostos))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-success font-medium">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(liquido)}
                       </td>
                     </tr>
@@ -291,10 +291,10 @@ export default function FaturamentosPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Nenhum faturamento cadastrado</p>
+            <p className="text-muted-foreground mb-4">Nenhum faturamento cadastrado</p>
             <button
               onClick={() => setShowForm(true)}
-              className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+              className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
             >
               Cadastrar Primeiro Faturamento
             </button>

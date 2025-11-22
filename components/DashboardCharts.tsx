@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { Fragment, useState, useMemo } from 'react'
 import {
   LineChart,
   Line,
@@ -25,15 +25,68 @@ interface DashboardChartsProps {
   pagamentos?: PagamentoDespesa[]
 }
 
-const COLORS = {
-  irpj: '#8b5cf6',
-  csll: '#ec4899',
-  pis: '#3b82f6',
-  cofins: '#10b981',
-  imposto: '#ef4444',
-  compromisso: '#f59e0b',
-  revenue: '#22c55e',
-  expenses: '#ef4444',
+const hslToHex = (hslString: string): string => {
+  const match = hslString.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%?\s+(\d+\.?\d*)%?/)
+  if (!match) return hslString
+
+  const h = parseFloat(match[1]) / 360
+  const s = parseFloat(match[2]) / 100
+  const l = parseFloat(match[3]) / 100
+
+  let r, g, b
+  if (s === 0) {
+    r = g = b = l
+  } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1
+      if (t > 1) t -= 1
+      if (t < 1/6) return p + (q - p) * 6 * t
+      if (t < 1/2) return q
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6
+      return p
+    }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+    const p = 2 * l - q
+    r = hue2rgb(p, q, h + 1/3)
+    g = hue2rgb(p, q, h)
+    b = hue2rgb(p, q, h - 1/3)
+  }
+
+  const toHex = (x: number) => {
+    const hex = Math.round(x * 255).toString(16)
+    return hex.length === 1 ? '0' + hex : hex
+  }
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+const useChartColors = () => {
+  if (typeof window === 'undefined') {
+    return {
+      irpj: '#8b5cf6',
+      csll: '#ec4899',
+      pis: '#3b82f6',
+      cofins: '#10b981',
+      imposto: '#ef4444',
+      compromisso: '#f59e0b',
+      revenue: '#22c55e',
+      expenses: '#ef4444',
+    }
+  }
+
+  const root = document.documentElement
+  const style = getComputedStyle(root)
+
+  return {
+    irpj: hslToHex(style.getPropertyValue('--chart-irpj')) || '#8b5cf6',
+    csll: hslToHex(style.getPropertyValue('--chart-csll')) || '#ec4899',
+    pis: hslToHex(style.getPropertyValue('--chart-pis')) || '#3b82f6',
+    cofins: hslToHex(style.getPropertyValue('--chart-cofins')) || '#10b981',
+    imposto: hslToHex(style.getPropertyValue('--chart-imposto')) || '#ef4444',
+    compromisso: hslToHex(style.getPropertyValue('--chart-compromisso')) || '#f59e0b',
+    revenue: hslToHex(style.getPropertyValue('--chart-revenue')) || '#22c55e',
+    expenses: hslToHex(style.getPropertyValue('--chart-expenses')) || '#ef4444',
+  }
 }
 
 const MONTHS = [
@@ -70,6 +123,7 @@ export default function DashboardCharts({
   faturamentos,
   despesas,
 }: DashboardChartsProps) {
+  const COLORS = useChartColors()
   const currentDate = new Date()
   const [startMonth, setStartMonth] = useState(0)
   const [startYear, setStartYear] = useState(currentDate.getFullYear())
@@ -332,17 +386,17 @@ export default function DashboardCharts({
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">Período</h3>
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-4 text-foreground">Período</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Mês Início
             </label>
             <select
               value={startMonth}
               onChange={(e) => setStartMonth(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border rounded-md"
             >
               {MONTHS.map((month, idx) => (
                 <option key={idx} value={idx}>
@@ -352,26 +406,26 @@ export default function DashboardCharts({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Ano Início
             </label>
             <input
               type="number"
               value={startYear}
               onChange={(e) => setStartYear(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border rounded-md"
               min="2020"
               max="2030"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Mês Fim
             </label>
             <select
               value={endMonth}
               onChange={(e) => setEndMonth(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border rounded-md"
             >
               {MONTHS.map((month, idx) => (
                 <option key={idx} value={idx}>
@@ -381,14 +435,14 @@ export default function DashboardCharts({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Ano Fim
             </label>
             <input
               type="number"
               value={endYear}
               onChange={(e) => setEndYear(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border rounded-md"
               min="2020"
               max="2030"
             />
@@ -398,37 +452,37 @@ export default function DashboardCharts({
 
       {/* Summary Cards */}
       <div className="grid md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
+        <div className="bg-card p-6 rounded-lg shadow-sm border">
+          <div className="text-sm font-medium text-muted-foreground mb-1">
             Receita Bruta
           </div>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold text-success">
             {formatCurrency(totals.revenue)}
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
+        <div className="bg-card p-6 rounded-lg shadow-sm border">
+          <div className="text-sm font-medium text-muted-foreground mb-1">
             Impostos
           </div>
-          <div className="text-2xl font-bold text-purple-600">
+          <div className="text-2xl font-bold text-primary">
             {formatCurrency(totals.tax)}
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
+        <div className="bg-card p-6 rounded-lg shadow-sm border">
+          <div className="text-sm font-medium text-muted-foreground mb-1">
             Despesas
           </div>
-          <div className="text-2xl font-bold text-orange-600">
+          <div className="text-2xl font-bold text-warning">
             {formatCurrency(totals.expenses)}
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="text-sm font-medium text-gray-600 mb-1">
+        <div className="bg-card p-6 rounded-lg shadow-sm border">
+          <div className="text-sm font-medium text-muted-foreground mb-1">
             Líquido
           </div>
           <div
             className={`text-2xl font-bold ${
-              totals.net >= 0 ? 'text-green-600' : 'text-red-600'
+              totals.net >= 0 ? 'text-success' : 'text-destructive'
             }`}
           >
             {formatCurrency(totals.net)}
@@ -437,8 +491,8 @@ export default function DashboardCharts({
       </div>
 
       {/* Revenue & Tax Trend */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
           Receita e Impostos por Mês
         </h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -468,8 +522,8 @@ export default function DashboardCharts({
 
       {/* Tax Breakdown & Expense Breakdown */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <div className="bg-card p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">
             Distribuição de Impostos
           </h3>
           {taxBreakdown.length > 0 ? (
@@ -500,12 +554,12 @@ export default function DashboardCharts({
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-gray-500 text-center py-12">Sem dados</p>
+            <p className="text-muted-foreground text-center py-12">Sem dados</p>
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <div className="bg-card p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">
             Distribuição de Despesas
           </h3>
           {expenseBreakdown.length > 0 ? (
@@ -538,14 +592,14 @@ export default function DashboardCharts({
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-gray-500 text-center py-12">Sem dados</p>
+            <p className="text-muted-foreground text-center py-12">Sem dados</p>
           )}
         </div>
       </div>
 
       {/* Cash Flow Chart */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">Fluxo de Caixa Mensal</h3>
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-4 text-foreground">Fluxo de Caixa Mensal</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={filteredData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -561,53 +615,53 @@ export default function DashboardCharts({
       </div>
 
       {/* Tax Payment Schedule */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-2 text-gray-900">
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-2 text-foreground">
           Cronograma de Pagamento de Impostos e Despesas
         </h3>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
-          <p className="text-sm text-yellow-800">
+        <div className="bg-warning/10 border border-warning rounded-md p-4 mb-4">
+          <p className="text-sm text-warning-foreground">
             <strong>⚠️ Importante:</strong> Os impostos sobre faturamento do mês
             X devem ser pagos no mês X+1.
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase w-10">
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase w-10">
 
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
                   Faturamento
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
                   Pagar em
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Receita
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   IRPJ
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   CSLL
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   PIS
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   COFINS
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Despesas
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Total
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="bg-card">
               {taxPaymentSchedule.map((item, idx) => {
                 const rowKey = `${item.paymentYear}-${item.paymentMonthNum}`
                 const isExpanded = expandedRows.has(rowKey)
@@ -617,13 +671,12 @@ export default function DashboardCharts({
                 )
 
                 return (
-                  <>
+                  <Fragment key={rowKey}>
                     <tr
-                      key={idx}
-                      className="border-t border-gray-200 hover:bg-gray-50 cursor-pointer"
+                      className="border-t border hover:bg-muted cursor-pointer"
                       onClick={() => toggleRow(rowKey)}
                     >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
                         <svg
                           className={`w-5 h-5 transition-transform ${
                             isExpanded ? 'rotate-90' : ''
@@ -640,39 +693,39 @@ export default function DashboardCharts({
                           />
                         </svg>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
                         {item.earningMonth}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary">
                         {item.paymentMonth}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">
                         {formatCurrency(item.revenue)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
                         {formatCurrency(item.irpj)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
                         {formatCurrency(item.csll)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
                         {formatCurrency(item.pis)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
                         {formatCurrency(item.cofins)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-orange-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-warning">
                         {formatCurrency(item.despesas)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-purple-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-primary">
                         {formatCurrency(item.total)}
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr key={`${idx}-detail`} className="bg-gray-50">
+                      <tr key={`${idx}-detail`} className="bg-muted">
                         <td colSpan={10} className="px-4 py-4">
                           <div className="ml-8">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                            <h4 className="text-sm font-semibold text-foreground mb-3">
                               Despesas de {item.paymentMonth}
                             </h4>
                             {monthDespesas.length > 0 ? (
@@ -680,13 +733,13 @@ export default function DashboardCharts({
                                 {monthDespesas.map((despesa) => (
                                   <div
                                     key={despesa.id}
-                                    className="flex items-center justify-between py-2 px-3 bg-white rounded border border-gray-200"
+                                    className="flex items-center justify-between py-2 px-3 bg-card rounded border"
                                   >
                                     <div className="flex-1">
-                                      <div className="text-sm font-medium text-gray-900">
+                                      <div className="text-sm font-medium text-foreground">
                                         {despesa.descricao}
                                       </div>
-                                      <div className="text-xs text-gray-500">
+                                      <div className="text-xs text-muted-foreground">
                                         {despesa.tipo === 'imposto'
                                           ? 'Imposto'
                                           : 'Compromisso'}{' '}
@@ -700,8 +753,8 @@ export default function DashboardCharts({
                                     <div
                                       className={`text-sm font-semibold ${
                                         despesa.tipo === 'imposto'
-                                          ? 'text-red-600'
-                                          : 'text-orange-600'
+                                          ? 'text-destructive'
+                                          : 'text-warning'
                                       }`}
                                     >
                                       {formatCurrency(Number(despesa.valor))}
@@ -710,7 +763,7 @@ export default function DashboardCharts({
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-sm text-gray-500 italic">
+                              <p className="text-sm text-muted-foreground italic">
                                 Nenhuma despesa cadastrada para este mês
                               </p>
                             )}
@@ -718,7 +771,7 @@ export default function DashboardCharts({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 )
               })}
             </tbody>
@@ -727,54 +780,54 @@ export default function DashboardCharts({
       </div>
 
       {/* Net Earnings After Deductions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
           Saldo Líquido por Mês
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Faturamento restante após impostos e despesas
         </p>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
                   Mês
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Faturamento
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Impostos
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Despesas
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
                   Saldo Líquido
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-border">
               {filteredData.map((item, idx) => {
                 const net = item.revenue - item.totalTax - item.expenses
                 return (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={idx} className="hover:bg-muted">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
                       {item.month}/{item.year}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">
                       {formatCurrency(item.revenue)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-purple-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-primary">
                       -{formatCurrency(item.totalTax)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-orange-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-warning">
                       -{formatCurrency(item.expenses)}
                     </td>
                     <td
                       className={`px-4 py-3 whitespace-nowrap text-sm text-right font-semibold ${
-                        net >= 0 ? 'text-green-600' : 'text-red-600'
+                        net >= 0 ? 'text-success' : 'text-destructive'
                       }`}
                     >
                       {formatCurrency(net)}
@@ -783,23 +836,23 @@ export default function DashboardCharts({
                 )
               })}
             </tbody>
-            <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+            <tfoot className="bg-muted border-t-2 border">
               <tr>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                <td className="px-4 py-3 text-sm font-semibold text-foreground">
                   Total
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-foreground">
                   {formatCurrency(totals.revenue)}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-purple-600">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-primary">
                   -{formatCurrency(totals.tax)}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-orange-600">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-warning">
                   -{formatCurrency(totals.expenses)}
                 </td>
                 <td
                   className={`px-4 py-3 whitespace-nowrap text-sm text-right font-bold ${
-                    totals.net >= 0 ? 'text-green-600' : 'text-red-600'
+                    totals.net >= 0 ? 'text-success' : 'text-destructive'
                   }`}
                 >
                   {formatCurrency(totals.net)}

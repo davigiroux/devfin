@@ -6,10 +6,10 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ error, className = '', children, ...props }, ref) => {
-    const baseClasses = 'w-full px-3 py-2 rounded-md bg-white focus:outline-none focus:ring-indigo-500 focus:z-10 text-black'
+    const baseClasses = 'w-full px-3 py-2 rounded-md bg-card focus:outline-none focus:ring-ring focus:z-10 text-foreground'
     const borderClasses = error
-      ? 'border border-red-300 focus:border-red-500'
-      : 'border border-gray-300 focus:border-indigo-500'
+      ? 'border border-destructive focus:border-destructive'
+      : 'border border-input focus:border-ring'
 
     return (
       <select

@@ -4,7 +4,7 @@ import React from 'react'
 
 const Checkbox = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className = '', ...props }, ref) => {
-    const baseClasses = 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
+    const baseClasses = 'h-4 w-4 text-primary focus:ring-ring border-input rounded'
 
     return (
       <input

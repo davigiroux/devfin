@@ -102,7 +102,7 @@ export default function SociosPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Carregando...</div>
+        <div className="text-muted-foreground">Carregando...</div>
       </div>
     )
   }
@@ -111,28 +111,28 @@ export default function SociosPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sócios</h1>
-          <p className="text-gray-600">Gerencie os sócios da empresa</p>
+          <h1 className="text-3xl font-bold text-foreground">Sócios</h1>
+          <p className="text-muted-foreground">Gerencie os sócios da empresa</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+          className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
         >
           {showForm ? 'Cancelar' : 'Novo Sócio'}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">Cadastrar Sócio</h2>
+        <div className="bg-card rounded-lg shadow-sm border p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-foreground">Cadastrar Sócio</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              <div className="bg-destructive border border-destructive text-destructive px-4 py-3 rounded">
                 {error}
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Nome Completo
               </label>
               <Input
@@ -143,7 +143,7 @@ export default function SociosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 CPF
               </label>
               <Input
@@ -156,7 +156,7 @@ export default function SociosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Percentual de Participação (%)
               </label>
               <Input
@@ -167,7 +167,7 @@ export default function SociosPage() {
                 required
                 placeholder="0,00"
               />
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Disponível: {(100 - totalPercentual).toFixed(2)}%
               </p>
             </div>
@@ -175,14 +175,14 @@ export default function SociosPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition disabled:opacity-50"
               >
                 {submitting ? 'Salvando...' : 'Salvar'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition"
+                className="bg-secondary text-foreground px-6 py-2 rounded-md hover:bg-muted transition"
               >
                 Cancelar
               </button>
@@ -192,25 +192,25 @@ export default function SociosPage() {
       )}
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold mb-2 text-gray-900">Total de Sócios</h3>
-          <p className="text-3xl font-bold text-indigo-600">{socios.length}</p>
+        <div className="bg-card rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-bold mb-2 text-foreground">Total de Sócios</h3>
+          <p className="text-3xl font-bold text-primary">{socios.length}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold mb-2 text-gray-900">Pró-labore Mínimo Recomendado</h3>
-          <p className="text-3xl font-bold text-green-600">
+        <div className="bg-card rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-bold mb-2 text-foreground">Pró-labore Mínimo Recomendado</h3>
+          <p className="text-3xl font-bold text-success">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(prolaboreMinimo)}
           </p>
-          <p className="text-sm text-gray-500 mt-1">Baseado no salário mínimo</p>
+          <p className="text-sm text-muted-foreground mt-1">Baseado no salário mínimo</p>
         </div>
       </div>
 
       {socios.length > 0 && totalPercentual === 100 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">Calcular INSS Pró-labore</h2>
+        <div className="bg-card rounded-lg shadow-sm border p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-foreground">Calcular INSS Pró-labore</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Valor Total do Pró-labore (R$)
               </label>
               <Input
@@ -224,7 +224,7 @@ export default function SociosPage() {
             <button
               onClick={() => setShowCalculoINSS(true)}
               disabled={!valorProlabore || parseFloat(valorProlabore) <= 0}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
+              className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition disabled:opacity-50"
             >
               Calcular INSS
             </button>
@@ -237,17 +237,17 @@ export default function SociosPage() {
                   return (
                     <div className="space-y-3">
                       {calculo.socios.map((socio) => (
-                        <div key={socio.socio_id} className="bg-white p-3 rounded border border-blue-200">
-                          <p className="font-medium text-gray-900">{socio.nome}</p>
-                          <div className="text-sm text-gray-600 mt-1 space-y-1">
+                        <div key={socio.socio_id} className="bg-card p-3 rounded border border-blue-200">
+                          <p className="font-medium text-foreground">{socio.nome}</p>
+                          <div className="text-sm text-muted-foreground mt-1 space-y-1">
                             <p>Pró-labore: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(socio.valor_prolabore)}</p>
                             <p>Alíquota efetiva: {socio.aliquota_inss.toFixed(2)}%</p>
-                            <p className="font-bold text-red-600">INSS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(socio.valor_inss)}</p>
+                            <p className="font-bold text-destructive">INSS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(socio.valor_inss)}</p>
                           </div>
                         </div>
                       ))}
-                      <div className="bg-indigo-100 p-3 rounded border border-indigo-300 mt-3">
-                        <p className="font-bold text-indigo-900">
+                      <div className="bg-muted p-3 rounded border mt-3">
+                        <p className="font-bold text-foreground">
                           Total INSS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calculo.total_inss)}
                         </p>
                       </div>
@@ -260,42 +260,42 @@ export default function SociosPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-card rounded-lg shadow-sm border">
         {socios.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Nome
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     CPF
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Participação
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {socios.map((socio) => (
                   <tr key={socio.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                       {socio.nome}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {socio.cpf}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {socio.percentual_participacao.toFixed(2)}%
                     </td>
                   </tr>
                 ))}
-                <tr className="bg-gray-50">
-                  <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                <tr className="bg-muted">
+                  <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-sm font-bold text-foreground">
                     Total
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-foreground">
                     {totalPercentual.toFixed(2)}%
                   </td>
                 </tr>
@@ -304,10 +304,10 @@ export default function SociosPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Nenhum sócio cadastrado</p>
+            <p className="text-muted-foreground mb-4">Nenhum sócio cadastrado</p>
             <button
               onClick={() => setShowForm(true)}
-              className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+              className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
             >
               Cadastrar Primeiro Sócio
             </button>
