@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcularINSSSocios, calcularProlaboreMinimo } from '@/lib/calculations/inss'
 import { Socio } from '@/types'
-import { Input } from '@/components/ui'
+import { Input, CurrencyInput } from '@/components/ui'
 
 export default function SociosPage() {
   const [socios, setSocios] = useState<Socio[]>([])
@@ -15,7 +15,7 @@ export default function SociosPage() {
   const [percentual, setPercentual] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [valorProlabore, setValorProlabore] = useState('')
+  const [valorProlabore, setValorProlabore] = useState<number | undefined>()
   const [showCalculoINSS, setShowCalculoINSS] = useState(false)
 
   const supabase = createClient()
@@ -213,27 +213,27 @@ export default function SociosPage() {
               <label className="block text-sm font-medium text-foreground mb-1">
                 Valor Total do Pró-labore (R$)
               </label>
-              <Input
-                type="number"
-                step="0.01"
+              <CurrencyInput
+                id="valorProlabore"
+                name="valorProlabore"
                 value={valorProlabore}
-                onChange={(e) => setValorProlabore(e.target.value)}
+                onValueChange={(value, name, values) => setValorProlabore(values?.float ?? undefined)}
                 placeholder="0,00"
               />
             </div>
             <button
               onClick={() => setShowCalculoINSS(true)}
-              disabled={!valorProlabore || parseFloat(valorProlabore) <= 0}
+              disabled={!valorProlabore || valorProlabore <= 0}
               className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition disabled:opacity-50"
             >
               Calcular INSS
             </button>
 
-            {showCalculoINSS && valorProlabore && parseFloat(valorProlabore) > 0 && (
+            {showCalculoINSS && valorProlabore && valorProlabore > 0 && (
               <div className="bg-blue-50 p-4 rounded-md mt-4">
                 <h3 className="font-medium text-blue-900 mb-3">Distribuição do INSS:</h3>
                 {(() => {
-                  const calculo = calcularINSSSocios(parseFloat(valorProlabore), socios)
+                  const calculo = calcularINSSSocios(valorProlabore, socios)
                   return (
                     <div className="space-y-3">
                       {calculo.socios.map((socio) => (
