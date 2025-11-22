@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { Fragment, useState, useMemo } from 'react'
+import { Fragment, useState, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -15,144 +15,145 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts'
-import { Faturamento, DespesaMensal, PagamentoDespesa } from '@/types'
-import { parseISO } from 'date-fns'
+} from "recharts";
+import { Faturamento, DespesaMensal, PagamentoDespesa } from "@/types";
+import { parseISO } from "date-fns";
 
 interface DashboardChartsProps {
-  faturamentos: Faturamento[]
-  despesas: DespesaMensal[]
-  pagamentos?: PagamentoDespesa[]
+  faturamentos: Faturamento[];
+  despesas: DespesaMensal[];
+  pagamentos?: PagamentoDespesa[];
 }
 
 const hslToHex = (hslString: string): string => {
-  const match = hslString.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%?\s+(\d+\.?\d*)%?/)
-  if (!match) return hslString
+  const match = hslString.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%?\s+(\d+\.?\d*)%?/);
+  if (!match) return hslString;
 
-  const h = parseFloat(match[1]) / 360
-  const s = parseFloat(match[2]) / 100
-  const l = parseFloat(match[3]) / 100
+  const h = parseFloat(match[1]) / 360;
+  const s = parseFloat(match[2]) / 100;
+  const l = parseFloat(match[3]) / 100;
 
-  let r, g, b
+  let r, g, b;
   if (s === 0) {
-    r = g = b = l
+    r = g = b = l;
   } else {
     const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1
-      if (t > 1) t -= 1
-      if (t < 1/6) return p + (q - p) * 6 * t
-      if (t < 1/2) return q
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6
-      return p
-    }
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s
-    const p = 2 * l - q
-    r = hue2rgb(p, q, h + 1/3)
-    g = hue2rgb(p, q, h)
-    b = hue2rgb(p, q, h - 1/3)
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
   }
 
   const toHex = (x: number) => {
-    const hex = Math.round(x * 255).toString(16)
-    return hex.length === 1 ? '0' + hex : hex
-  }
+    const hex = Math.round(x * 255).toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  };
 
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
-}
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
 
 const useChartColors = () => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return {
-      irpj: '#8b5cf6',
-      csll: '#ec4899',
-      pis: '#3b82f6',
-      cofins: '#10b981',
-      imposto: '#ef4444',
-      compromisso: '#f59e0b',
-      revenue: '#22c55e',
-      expenses: '#ef4444',
-    }
+      irpj: "#8b5cf6",
+      csll: "#ec4899",
+      pis: "#3b82f6",
+      cofins: "#10b981",
+      imposto: "#ef4444",
+      compromisso: "#f59e0b",
+      revenue: "#22c55e",
+      expenses: "#ef4444",
+    };
   }
 
-  const root = document.documentElement
-  const style = getComputedStyle(root)
+  const root = document.documentElement;
+  const style = getComputedStyle(root);
 
   return {
-    irpj: hslToHex(style.getPropertyValue('--chart-irpj')) || '#8b5cf6',
-    csll: hslToHex(style.getPropertyValue('--chart-csll')) || '#ec4899',
-    pis: hslToHex(style.getPropertyValue('--chart-pis')) || '#3b82f6',
-    cofins: hslToHex(style.getPropertyValue('--chart-cofins')) || '#10b981',
-    imposto: hslToHex(style.getPropertyValue('--chart-imposto')) || '#ef4444',
-    compromisso: hslToHex(style.getPropertyValue('--chart-compromisso')) || '#f59e0b',
-    revenue: hslToHex(style.getPropertyValue('--chart-revenue')) || '#22c55e',
-    expenses: hslToHex(style.getPropertyValue('--chart-expenses')) || '#ef4444',
-  }
-}
+    irpj: hslToHex(style.getPropertyValue("--chart-irpj")) || "#8b5cf6",
+    csll: hslToHex(style.getPropertyValue("--chart-csll")) || "#ec4899",
+    pis: hslToHex(style.getPropertyValue("--chart-pis")) || "#3b82f6",
+    cofins: hslToHex(style.getPropertyValue("--chart-cofins")) || "#10b981",
+    imposto: hslToHex(style.getPropertyValue("--chart-imposto")) || "#ef4444",
+    compromisso:
+      hslToHex(style.getPropertyValue("--chart-compromisso")) || "#f59e0b",
+    revenue: hslToHex(style.getPropertyValue("--chart-revenue")) || "#22c55e",
+    expenses: hslToHex(style.getPropertyValue("--chart-expenses")) || "#ef4444",
+  };
+};
 
 const MONTHS = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
-]
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
+];
 
 interface MonthlyData {
-  month: string
-  year: number
-  monthNum: number
-  revenue: number
-  irpj: number
-  csll: number
-  pis: number
-  cofins: number
-  totalTax: number
-  expenses: number
-  expensesImposto: number
-  expensesCompromisso: number
+  month: string;
+  year: number;
+  monthNum: number;
+  revenue: number;
+  irpj: number;
+  csll: number;
+  pis: number;
+  cofins: number;
+  totalTax: number;
+  expenses: number;
+  expensesImposto: number;
+  expensesCompromisso: number;
 }
 
 export default function DashboardCharts({
   faturamentos,
   despesas,
 }: DashboardChartsProps) {
-  const COLORS = useChartColors()
-  const currentDate = new Date()
-  const [startMonth, setStartMonth] = useState(0)
-  const [startYear, setStartYear] = useState(currentDate.getFullYear())
-  const [endMonth, setEndMonth] = useState(currentDate.getMonth())
-  const [endYear, setEndYear] = useState(currentDate.getFullYear())
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const COLORS = useChartColors();
+  const currentDate = new Date();
+  const [startMonth, setStartMonth] = useState(0);
+  const [startYear, setStartYear] = useState(currentDate.getFullYear());
+  const [endMonth, setEndMonth] = useState(currentDate.getMonth());
+  const [endYear, setEndYear] = useState(currentDate.getFullYear());
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const filteredData = useMemo(() => {
     // Filter faturamentos by date range
     const filtered = faturamentos.filter((f) => {
-      const date = parseISO(f.data)
-      const month = date.getMonth()
-      const year = date.getFullYear()
+      const date = parseISO(f.data);
+      const month = date.getMonth();
+      const year = date.getFullYear();
 
-      const startDate = new Date(startYear, startMonth, 1)
-      const endDate = new Date(endYear, endMonth, 31)
-      const itemDate = new Date(year, month, 1)
+      const startDate = new Date(startYear, startMonth, 1);
+      const endDate = new Date(endYear, endMonth, 31);
+      const itemDate = new Date(year, month, 1);
 
-      return itemDate >= startDate && itemDate <= endDate
-    })
+      return itemDate >= startDate && itemDate <= endDate;
+    });
 
     // Group by month
-    const monthlyData = new Map<string, MonthlyData>()
+    const monthlyData = new Map<string, MonthlyData>();
 
     filtered.forEach((f) => {
-      const date = parseISO(f.data)
-      const month = date.getMonth()
-      const year = date.getFullYear()
-      const key = `${year}-${String(month + 1).padStart(2, '0')}`
+      const date = parseISO(f.data);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      const key = `${year}-${String(month + 1).padStart(2, "0")}`;
 
       if (!monthlyData.has(key)) {
         monthlyData.set(key, {
@@ -168,36 +169,36 @@ export default function DashboardCharts({
           expenses: 0,
           expensesImposto: 0,
           expensesCompromisso: 0,
-        })
+        });
       }
 
-      const data = monthlyData.get(key)!
-      data.revenue += Number(f.valor_bruto)
-      data.irpj += Number(f.irpj)
-      data.csll += Number(f.csll)
-      data.pis += Number(f.pis)
-      data.cofins += Number(f.cofins)
-      data.totalTax += Number(f.total_impostos)
-    })
+      const data = monthlyData.get(key)!;
+      data.revenue += Number(f.valor_bruto);
+      data.irpj += Number(f.irpj);
+      data.csll += Number(f.csll);
+      data.pis += Number(f.pis);
+      data.cofins += Number(f.cofins);
+      data.totalTax += Number(f.total_impostos);
+    });
 
     // Add expenses to monthly data
     despesas.forEach((d) => {
-      if (!d.ativa) return
+      if (!d.ativa) return;
 
       if (d.recorrente) {
         // Add to each month in range
-        const startDate = new Date(startYear, startMonth, 1)
-        const endDate = new Date(endYear, endMonth, 31)
-        const effectiveFrom = parseISO(d.effective_from)
+        const startDate = new Date(startYear, startMonth, 1);
+        const endDate = new Date(endYear, endMonth, 31);
+        const effectiveFrom = parseISO(d.effective_from);
 
         let currentDate = new Date(
           Math.max(startDate.getTime(), effectiveFrom.getTime())
-        )
+        );
 
         while (currentDate <= endDate) {
-          const month = currentDate.getMonth()
-          const year = currentDate.getFullYear()
-          const key = `${year}-${String(month + 1).padStart(2, '0')}`
+          const month = currentDate.getMonth();
+          const year = currentDate.getFullYear();
+          const key = `${year}-${String(month + 1).padStart(2, "0")}`;
 
           if (!monthlyData.has(key)) {
             monthlyData.set(key, {
@@ -213,41 +214,44 @@ export default function DashboardCharts({
               expenses: 0,
               expensesImposto: 0,
               expensesCompromisso: 0,
-            })
+            });
           }
 
-          const data = monthlyData.get(key)!
-          data.expenses += Number(d.valor)
-          if (d.tipo === 'imposto') {
-            data.expensesImposto += Number(d.valor)
+          const data = monthlyData.get(key)!;
+          data.expenses += Number(d.valor);
+          if (d.tipo === "imposto") {
+            data.expensesImposto += Number(d.valor);
           } else {
-            data.expensesCompromisso += Number(d.valor)
+            data.expensesCompromisso += Number(d.valor);
           }
 
-          const nextMonth = currentDate.getMonth() + 1
-          currentDate = new Date(currentDate.getFullYear(), nextMonth, 1)
+          const nextMonth = currentDate.getMonth() + 1;
+          currentDate = new Date(currentDate.getFullYear(), nextMonth, 1);
         }
       } else if (d.mes_referencia !== null && d.ano_referencia !== null) {
         // One-time expense
-        const key = `${d.ano_referencia}-${String(d.mes_referencia).padStart(2, '0')}`
+        const key = `${d.ano_referencia}-${String(d.mes_referencia).padStart(
+          2,
+          "0"
+        )}`;
 
         if (monthlyData.has(key)) {
-          const data = monthlyData.get(key)!
-          data.expenses += Number(d.valor)
-          if (d.tipo === 'imposto') {
-            data.expensesImposto += Number(d.valor)
+          const data = monthlyData.get(key)!;
+          data.expenses += Number(d.valor);
+          if (d.tipo === "imposto") {
+            data.expensesImposto += Number(d.valor);
           } else {
-            data.expensesCompromisso += Number(d.valor)
+            data.expensesCompromisso += Number(d.valor);
           }
         }
       }
-    })
+    });
 
     return Array.from(monthlyData.values()).sort((a, b) => {
-      if (a.year !== b.year) return a.year - b.year
-      return a.monthNum - b.monthNum
-    })
-  }, [faturamentos, despesas, startMonth, startYear, endMonth, endYear])
+      if (a.year !== b.year) return a.year - b.year;
+      return a.monthNum - b.monthNum;
+    });
+  }, [faturamentos, despesas, startMonth, startYear, endMonth, endYear]);
 
   // Tax breakdown pie chart data
   const taxBreakdown = useMemo(() => {
@@ -259,15 +263,15 @@ export default function DashboardCharts({
         cofins: acc.cofins + d.cofins,
       }),
       { irpj: 0, csll: 0, pis: 0, cofins: 0 }
-    )
+    );
 
     return [
-      { name: 'IRPJ', value: totals.irpj },
-      { name: 'CSLL', value: totals.csll },
-      { name: 'PIS', value: totals.pis },
-      { name: 'COFINS', value: totals.cofins },
-    ].filter((item) => item.value > 0)
-  }, [filteredData])
+      { name: "IRPJ", value: totals.irpj },
+      { name: "CSLL", value: totals.csll },
+      { name: "PIS", value: totals.pis },
+      { name: "COFINS", value: totals.cofins },
+    ].filter((item) => item.value > 0);
+  }, [filteredData]);
 
   // Expense breakdown pie chart data
   const expenseBreakdown = useMemo(() => {
@@ -277,39 +281,46 @@ export default function DashboardCharts({
         compromisso: acc.compromisso + d.expensesCompromisso,
       }),
       { imposto: 0, compromisso: 0 }
-    )
+    );
 
     return [
-      { name: 'Impostos', value: totals.imposto },
-      { name: 'Compromissos', value: totals.compromisso },
-    ].filter((item) => item.value > 0)
-  }, [filteredData])
+      { name: "Impostos", value: totals.imposto },
+      { name: "Compromissos", value: totals.compromisso },
+    ].filter((item) => item.value > 0);
+  }, [filteredData]);
 
   // Tax payment schedule (revenue in month X -> tax paid in month X+1)
   const taxPaymentSchedule = useMemo(() => {
     return filteredData.map((d) => {
-      const paymentYear = d.monthNum === 12 ? d.year + 1 : d.year
-      const paymentMonthNum = d.monthNum === 12 ? 1 : d.monthNum + 1
+      const paymentYear = d.monthNum === 12 ? d.year + 1 : d.year;
+      const paymentMonthNum = d.monthNum === 12 ? 1 : d.monthNum + 1;
 
       // Get despesas for payment month
       const monthDespesas = despesas.filter((desp) => {
-        if (!desp.ativa) return false
+        if (!desp.ativa) return false;
 
         if (desp.recorrente) {
-          const effectiveFrom = parseISO(desp.effective_from)
-          const effectiveMonth = effectiveFrom.getMonth() + 1
-          const effectiveYear = effectiveFrom.getFullYear()
+          const effectiveFrom = parseISO(desp.effective_from);
+          const effectiveMonth = effectiveFrom.getMonth() + 1;
+          const effectiveYear = effectiveFrom.getFullYear();
 
-          if (paymentYear < effectiveYear) return false
-          if (paymentYear === effectiveYear && paymentMonthNum < effectiveMonth) return false
+          if (paymentYear < effectiveYear) return false;
+          if (paymentYear === effectiveYear && paymentMonthNum < effectiveMonth)
+            return false;
 
-          return true
+          return true;
         } else {
-          return desp.mes_referencia === paymentMonthNum && desp.ano_referencia === paymentYear
+          return (
+            desp.mes_referencia === paymentMonthNum &&
+            desp.ano_referencia === paymentYear
+          );
         }
-      })
+      });
 
-      const totalDespesas = monthDespesas.reduce((acc, desp) => acc + Number(desp.valor), 0)
+      const totalDespesas = monthDespesas.reduce(
+        (acc, desp) => acc + Number(desp.valor),
+        0
+      );
 
       return {
         earningMonth: `${d.month}/${d.year}`,
@@ -328,9 +339,9 @@ export default function DashboardCharts({
         despesas: totalDespesas,
         total: d.totalTax + totalDespesas,
         revenue: d.revenue,
-      }
-    })
-  }, [filteredData, despesas])
+      };
+    });
+  }, [filteredData, despesas]);
 
   // Summary totals
   const totals = useMemo(() => {
@@ -342,46 +353,46 @@ export default function DashboardCharts({
         net: acc.net + (d.revenue - d.totalTax - d.expenses),
       }),
       { revenue: 0, tax: 0, expenses: 0, net: 0 }
-    )
-  }, [filteredData])
+    );
+  }, [filteredData]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value)
-  }
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
 
   const toggleRow = (key: string) => {
-    const newExpanded = new Set(expandedRows)
+    const newExpanded = new Set(expandedRows);
     if (newExpanded.has(key)) {
-      newExpanded.delete(key)
+      newExpanded.delete(key);
     } else {
-      newExpanded.add(key)
+      newExpanded.add(key);
     }
-    setExpandedRows(newExpanded)
-  }
+    setExpandedRows(newExpanded);
+  };
 
   const getDespesasForMonth = (year: number, month: number) => {
     return despesas.filter((d) => {
-      if (!d.ativa) return false
+      if (!d.ativa) return false;
 
       if (d.recorrente) {
-        const effectiveFrom = parseISO(d.effective_from)
-        const effectiveMonth = effectiveFrom.getMonth() + 1
-        const effectiveYear = effectiveFrom.getFullYear()
+        const effectiveFrom = parseISO(d.effective_from);
+        const effectiveMonth = effectiveFrom.getMonth() + 1;
+        const effectiveYear = effectiveFrom.getFullYear();
 
         // Check if this month/year is after or equal to effective date
-        if (year < effectiveYear) return false
-        if (year === effectiveYear && month < effectiveMonth) return false
+        if (year < effectiveYear) return false;
+        if (year === effectiveYear && month < effectiveMonth) return false;
 
-        return true
+        return true;
       } else {
         // One-time expense
-        return d.mes_referencia === month && d.ano_referencia === year
+        return d.mes_referencia === month && d.ano_referencia === year;
       }
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -482,11 +493,258 @@ export default function DashboardCharts({
           </div>
           <div
             className={`text-2xl font-bold ${
-              totals.net >= 0 ? 'text-success' : 'text-destructive'
+              totals.net >= 0 ? "text-success" : "text-destructive"
             }`}
           >
             {formatCurrency(totals.net)}
           </div>
+        </div>
+      </div>
+
+      {/* Net Earnings After Deductions */}
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
+          Saldo Líquido por Mês
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Faturamento restante após impostos e despesas
+        </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
+                  Mês
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Faturamento
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Impostos
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Despesas
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Saldo Líquido
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-card divide-y divide-border">
+              {filteredData.map((item, idx) => {
+                const net = item.revenue - item.totalTax - item.expenses;
+                return (
+                  <tr key={idx} className="hover:bg-muted">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
+                      {item.month}/{item.year}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">
+                      {formatCurrency(item.revenue)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-primary">
+                      -{formatCurrency(item.totalTax)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-warning">
+                      -{formatCurrency(item.expenses)}
+                    </td>
+                    <td
+                      className={`px-4 py-3 whitespace-nowrap text-sm text-right font-semibold ${
+                        net >= 0 ? "text-success" : "text-destructive"
+                      }`}
+                    >
+                      {formatCurrency(net)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot className="bg-muted border-t-2 border">
+              <tr>
+                <td className="px-4 py-3 text-sm font-semibold text-foreground">
+                  Total
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-foreground">
+                  {formatCurrency(totals.revenue)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-primary">
+                  -{formatCurrency(totals.tax)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-warning">
+                  -{formatCurrency(totals.expenses)}
+                </td>
+                <td
+                  className={`px-4 py-3 whitespace-nowrap text-sm text-right font-bold ${
+                    totals.net >= 0 ? "text-success" : "text-destructive"
+                  }`}
+                >
+                  {formatCurrency(totals.net)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* Tax Payment Schedule */}
+      <div className="bg-card p-6 rounded-lg shadow-sm border">
+        <h3 className="text-lg font-semibold mb-2 text-foreground">
+          Cronograma de Pagamento de Impostos e Despesas
+        </h3>
+        <div className="bg-warning/10 border border-warning rounded-md p-4 mb-4">
+          <p className="text-sm text-warning-foreground">
+            <strong>⚠️ Importante:</strong> Os impostos sobre faturamento do mês
+            X devem ser pagos no mês X+1.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase w-10"></th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
+                  Faturamento
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
+                  Pagar em
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Receita
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  IRPJ
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  CSLL
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  PIS
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  COFINS
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Despesas
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-card">
+              {taxPaymentSchedule.map((item, idx) => {
+                const rowKey = `${item.paymentYear}-${item.paymentMonthNum}`;
+                const isExpanded = expandedRows.has(rowKey);
+                const monthDespesas = getDespesasForMonth(
+                  item.paymentYear,
+                  item.paymentMonthNum
+                );
+
+                return (
+                  <Fragment key={rowKey}>
+                    <tr
+                      className="border-t border hover:bg-muted cursor-pointer"
+                      onClick={() => toggleRow(rowKey)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                        <svg
+                          className={`w-5 h-5 transition-transform ${
+                            isExpanded ? "rotate-90" : ""
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
+                        {item.earningMonth}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary">
+                        {item.paymentMonth}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">
+                        {formatCurrency(item.revenue)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
+                        {formatCurrency(item.irpj)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
+                        {formatCurrency(item.csll)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
+                        {formatCurrency(item.pis)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
+                        {formatCurrency(item.cofins)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-warning">
+                        {formatCurrency(item.despesas)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-primary">
+                        {formatCurrency(item.total)}
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${idx}-detail`} className="bg-muted">
+                        <td colSpan={10} className="px-4 py-4">
+                          <div className="ml-8">
+                            <h4 className="text-sm font-semibold text-foreground mb-3">
+                              Despesas de {item.paymentMonth}
+                            </h4>
+                            {monthDespesas.length > 0 ? (
+                              <div className="space-y-2">
+                                {monthDespesas.map((despesa) => (
+                                  <div
+                                    key={despesa.id}
+                                    className="flex items-center justify-between py-2 px-3 bg-card rounded border"
+                                  >
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-foreground">
+                                        {despesa.descricao}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {despesa.tipo === "imposto"
+                                          ? "Imposto"
+                                          : "Compromisso"}{" "}
+                                        •{" "}
+                                        {despesa.recorrente
+                                          ? "Recorrente"
+                                          : "Único"}{" "}
+                                        • Venc: dia {despesa.dia_vencimento}
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={`text-sm font-semibold ${
+                                        despesa.tipo === "imposto"
+                                          ? "text-destructive"
+                                          : "text-warning"
+                                      }`}
+                                    >
+                                      {formatCurrency(Number(despesa.valor))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground italic">
+                                Nenhuma despesa cadastrada para este mês
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -581,7 +839,7 @@ export default function DashboardCharts({
                     <Cell
                       key={`cell-${index}`}
                       fill={
-                        entry.name === 'Impostos'
+                        entry.name === "Impostos"
                           ? COLORS.imposto
                           : COLORS.compromisso
                       }
@@ -599,7 +857,9 @@ export default function DashboardCharts({
 
       {/* Cash Flow Chart */}
       <div className="bg-card p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold mb-4 text-foreground">Fluxo de Caixa Mensal</h3>
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
+          Fluxo de Caixa Mensal
+        </h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={filteredData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -613,255 +873,6 @@ export default function DashboardCharts({
           </BarChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Tax Payment Schedule */}
-      <div className="bg-card p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold mb-2 text-foreground">
-          Cronograma de Pagamento de Impostos e Despesas
-        </h3>
-        <div className="bg-warning/10 border border-warning rounded-md p-4 mb-4">
-          <p className="text-sm text-warning-foreground">
-            <strong>⚠️ Importante:</strong> Os impostos sobre faturamento do mês
-            X devem ser pagos no mês X+1.
-          </p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase w-10">
-
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
-                  Faturamento
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
-                  Pagar em
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Receita
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  IRPJ
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  CSLL
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  PIS
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  COFINS
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Despesas
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-card">
-              {taxPaymentSchedule.map((item, idx) => {
-                const rowKey = `${item.paymentYear}-${item.paymentMonthNum}`
-                const isExpanded = expandedRows.has(rowKey)
-                const monthDespesas = getDespesasForMonth(
-                  item.paymentYear,
-                  item.paymentMonthNum
-                )
-
-                return (
-                  <Fragment key={rowKey}>
-                    <tr
-                      className="border-t border hover:bg-muted cursor-pointer"
-                      onClick={() => toggleRow(rowKey)}
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
-                        <svg
-                          className={`w-5 h-5 transition-transform ${
-                            isExpanded ? 'rotate-90' : ''
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
-                        {item.earningMonth}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary">
-                        {item.paymentMonth}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">
-                        {formatCurrency(item.revenue)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
-                        {formatCurrency(item.irpj)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
-                        {formatCurrency(item.csll)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
-                        {formatCurrency(item.pis)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-muted-foreground">
-                        {formatCurrency(item.cofins)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-warning">
-                        {formatCurrency(item.despesas)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-primary">
-                        {formatCurrency(item.total)}
-                      </td>
-                    </tr>
-                    {isExpanded && (
-                      <tr key={`${idx}-detail`} className="bg-muted">
-                        <td colSpan={10} className="px-4 py-4">
-                          <div className="ml-8">
-                            <h4 className="text-sm font-semibold text-foreground mb-3">
-                              Despesas de {item.paymentMonth}
-                            </h4>
-                            {monthDespesas.length > 0 ? (
-                              <div className="space-y-2">
-                                {monthDespesas.map((despesa) => (
-                                  <div
-                                    key={despesa.id}
-                                    className="flex items-center justify-between py-2 px-3 bg-card rounded border"
-                                  >
-                                    <div className="flex-1">
-                                      <div className="text-sm font-medium text-foreground">
-                                        {despesa.descricao}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground">
-                                        {despesa.tipo === 'imposto'
-                                          ? 'Imposto'
-                                          : 'Compromisso'}{' '}
-                                        •{' '}
-                                        {despesa.recorrente
-                                          ? 'Recorrente'
-                                          : 'Único'}{' '}
-                                        • Venc: dia {despesa.dia_vencimento}
-                                      </div>
-                                    </div>
-                                    <div
-                                      className={`text-sm font-semibold ${
-                                        despesa.tipo === 'imposto'
-                                          ? 'text-destructive'
-                                          : 'text-warning'
-                                      }`}
-                                    >
-                                      {formatCurrency(Number(despesa.valor))}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-muted-foreground italic">
-                                Nenhuma despesa cadastrada para este mês
-                              </p>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Net Earnings After Deductions */}
-      <div className="bg-card p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold mb-4 text-foreground">
-          Saldo Líquido por Mês
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Faturamento restante após impostos e despesas
-        </p>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase">
-                  Mês
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Faturamento
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Impostos
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Despesas
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-foreground uppercase">
-                  Saldo Líquido
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-card divide-y divide-border">
-              {filteredData.map((item, idx) => {
-                const net = item.revenue - item.totalTax - item.expenses
-                return (
-                  <tr key={idx} className="hover:bg-muted">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground">
-                      {item.month}/{item.year}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-foreground">
-                      {formatCurrency(item.revenue)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-primary">
-                      -{formatCurrency(item.totalTax)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-warning">
-                      -{formatCurrency(item.expenses)}
-                    </td>
-                    <td
-                      className={`px-4 py-3 whitespace-nowrap text-sm text-right font-semibold ${
-                        net >= 0 ? 'text-success' : 'text-destructive'
-                      }`}
-                    >
-                      {formatCurrency(net)}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-            <tfoot className="bg-muted border-t-2 border">
-              <tr>
-                <td className="px-4 py-3 text-sm font-semibold text-foreground">
-                  Total
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-foreground">
-                  {formatCurrency(totals.revenue)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-primary">
-                  -{formatCurrency(totals.tax)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-warning">
-                  -{formatCurrency(totals.expenses)}
-                </td>
-                <td
-                  className={`px-4 py-3 whitespace-nowrap text-sm text-right font-bold ${
-                    totals.net >= 0 ? 'text-success' : 'text-destructive'
-                  }`}
-                >
-                  {formatCurrency(totals.net)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
     </div>
-  )
+  );
 }
