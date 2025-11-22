@@ -43,10 +43,10 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-foreground">
           Bem-vindo, {userData?.nome_completo || 'Usuário'}!
         </h1>
-        <p className="text-gray-600">Dashboard financeiro completo</p>
+        <p className="text-muted-foreground">Dashboard financeiro completo</p>
       </div>
 
       {faturamentos && faturamentos.length > 0 ? (
@@ -56,16 +56,16 @@ export default async function DashboardPage() {
           pagamentos={pagamentos || []}
         />
       ) : (
-        <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center">
-          <p className="text-gray-500 mb-4">
+        <div className="bg-card p-12 rounded-lg shadow-sm border text-center">
+          <p className="text-muted-foreground mb-4">
             Nenhum faturamento cadastrado ainda
           </p>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-muted-foreground text-sm mb-6">
             Cadastre seus faturamentos para visualizar o dashboard
           </p>
           <Link
             href="/faturamentos"
-            className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+            className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
           >
             Cadastrar Faturamento
           </Link>
@@ -76,30 +76,30 @@ export default async function DashboardPage() {
       <div className="grid md:grid-cols-3 gap-6 mt-8">
         <Link
           href="/faturamentos"
-          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 transition"
+          className="bg-card p-6 rounded-lg shadow-sm border hover:border-ring transition"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             Faturamentos
           </h3>
-          <p className="text-gray-600 text-sm">
+          <p className="text-muted-foreground text-sm">
             Cadastrar e gerenciar receitas mensais
           </p>
         </Link>
         <Link
           href="/despesas"
-          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 transition"
+          className="bg-card p-6 rounded-lg shadow-sm border hover:border-ring transition"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Despesas</h3>
-          <p className="text-gray-600 text-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Despesas</h3>
+          <p className="text-muted-foreground text-sm">
             Controlar despesas e compromissos
           </p>
         </Link>
         <Link
           href="/socios"
-          className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-300 transition"
+          className="bg-card p-6 rounded-lg shadow-sm border hover:border-ring transition"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Sócios</h3>
-          <p className="text-gray-600 text-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Sócios</h3>
+          <p className="text-muted-foreground text-sm">
             Gerenciar sócios e distribuição de lucros
           </p>
         </Link>

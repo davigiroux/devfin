@@ -19,10 +19,10 @@ export interface DateInputProps {
 
 const DateInput = React.forwardRef<DatePicker, DateInputProps>(
   ({ error, className = '', onChange, ...props }, ref) => {
-    const baseClasses = 'w-full px-3 py-2 rounded-md bg-white focus:outline-none focus:ring-indigo-500 focus:z-10 text-black'
+    const baseClasses = 'w-full px-3 py-2 rounded-md bg-card focus:outline-none focus:ring-ring focus:z-10 text-foreground'
     const borderClasses = error
-      ? 'border border-red-300 focus:border-red-500'
-      : 'border border-gray-300 focus:border-indigo-500'
+      ? 'border border-destructive focus:border-destructive'
+      : 'border border-input focus:border-ring'
 
     const handleChange = (date: Date | null) => {
       onChange(date)

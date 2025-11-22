@@ -265,7 +265,7 @@ export default function DespesasPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Carregando...</div>
+        <div className="text-muted-foreground">Carregando...</div>
       </div>
     )
   }
@@ -274,12 +274,12 @@ export default function DespesasPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Despesas Mensais</h1>
-          <p className="text-gray-600">Gerencie despesas recorrentes e únicas</p>
+          <h1 className="text-3xl font-bold text-foreground">Despesas Mensais</h1>
+          <p className="text-muted-foreground">Gerencie despesas recorrentes e únicas</p>
         </div>
         <button
           onClick={() => showForm ? cancelEdit() : setShowForm(true)}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+          className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
         >
           {showForm ? 'Cancelar' : 'Nova Despesa'}
         </button>
@@ -287,21 +287,21 @@ export default function DespesasPage() {
 
       {/* Summary Card */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="text-sm text-gray-600 mb-1">Total Mensal</div>
-          <div className="text-2xl font-bold text-gray-900">
+        <div className="bg-card rounded-lg shadow-sm border p-6">
+          <div className="text-sm text-muted-foreground mb-1">Total Mensal</div>
+          <div className="text-2xl font-bold text-foreground">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(caixaNecessario.total_despesas)}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="text-sm text-gray-600 mb-1">Impostos</div>
-          <div className="text-2xl font-bold text-red-600">
+        <div className="bg-card rounded-lg shadow-sm border p-6">
+          <div className="text-sm text-muted-foreground mb-1">Impostos</div>
+          <div className="text-2xl font-bold text-destructive">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(caixaNecessario.despesas_impostos)}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="text-sm text-gray-600 mb-1">Compromissos</div>
-          <div className="text-2xl font-bold text-orange-600">
+        <div className="bg-card rounded-lg shadow-sm border p-6">
+          <div className="text-sm text-muted-foreground mb-1">Compromissos</div>
+          <div className="text-2xl font-bold text-warning">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(caixaNecessario.despesas_compromissos)}
           </div>
         </div>
@@ -309,7 +309,7 @@ export default function DespesasPage() {
 
       {/* Month/Year Selector */}
       <div className="mb-6 flex items-center gap-4">
-        <label className="text-sm font-medium text-gray-700">Visualizar:</label>
+        <label className="text-sm font-medium text-foreground">Visualizar:</label>
         <Select
           value={mesView}
           onChange={(e) => setMesView(Number(e.target.value))}
@@ -338,18 +338,18 @@ export default function DespesasPage() {
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">
+        <div className="bg-card rounded-lg shadow-sm border p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-foreground">
             {editingDespesa ? 'Editar Despesa (Nova Versão)' : 'Cadastrar Despesa'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              <div className="bg-destructive border border-destructive text-destructive px-4 py-3 rounded">
                 {error}
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Descrição
               </label>
               <Input
@@ -361,7 +361,7 @@ export default function DespesasPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Tipo
               </label>
               <Select
@@ -373,7 +373,7 @@ export default function DespesasPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Valor (R$)
               </label>
               <CurrencyInputComponent
@@ -386,7 +386,7 @@ export default function DespesasPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Dia de Vencimento
               </label>
               <Input
@@ -399,7 +399,7 @@ export default function DespesasPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Data Efetiva (a partir de)
               </label>
               <DateInput
@@ -415,14 +415,14 @@ export default function DespesasPage() {
                 checked={recorrente}
                 onChange={(e) => setRecorrente(e.target.checked)}
               />
-              <label htmlFor="recorrente" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="recorrente" className="ml-2 block text-sm text-foreground">
                 Despesa recorrente (todos os meses)
               </label>
             </div>
             {!recorrente && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Mês
                   </label>
                   <Select
@@ -444,7 +444,7 @@ export default function DespesasPage() {
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Ano
                   </label>
                   <Input
@@ -461,14 +461,14 @@ export default function DespesasPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition disabled:opacity-50"
               >
                 {submitting ? 'Salvando...' : 'Salvar'}
               </button>
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition"
+                className="bg-secondary text-foreground px-6 py-2 rounded-md hover:bg-muted transition"
               >
                 Cancelar
               </button>
@@ -477,42 +477,42 @@ export default function DespesasPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-card rounded-lg shadow-sm border">
         {caixaNecessario.despesas.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Descrição
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Tipo
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Valor
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Vencimento
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Recorrência
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Pago
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {caixaNecessario.despesas.map((despesa) => (
                   <tr key={despesa.id} className={!despesa.ativa ? 'opacity-50' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                       {despesa.descricao}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -524,15 +524,15 @@ export default function DespesasPage() {
                         {despesa.tipo === 'imposto' ? 'Imposto' : 'Compromisso'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(despesa.valor)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       Dia {despesa.dia_vencimento}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {despesa.recorrente ? (
-                        <span className="text-green-600">Mensal</span>
+                        <span className="text-success">Mensal</span>
                       ) : (
                         <span className="text-blue-600">
                           {despesa.mes_referencia}/{despesa.ano_referencia}
@@ -578,7 +578,7 @@ export default function DespesasPage() {
                         </button>
                         <button
                           onClick={() => toggleDespesaAtiva(despesa)}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-primary hover:text-foreground"
                         >
                           {despesa.ativa ? 'Desativar' : 'Ativar'}
                         </button>
@@ -591,10 +591,10 @@ export default function DespesasPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Nenhuma despesa para {mesView}/{anoView}</p>
+            <p className="text-muted-foreground mb-4">Nenhuma despesa para {mesView}/{anoView}</p>
             <button
               onClick={() => setShowForm(true)}
-              className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition"
+              className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-md hover:bg-primary transition"
             >
               Cadastrar Primeira Despesa
             </button>
