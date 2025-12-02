@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { calcularImpostosLucroPresumido } from '@/lib/calculations/impostos'
+import { calcularImpostosLucroPresumido, calcularSaldoLiquidoExportacao } from '@/lib/calculations/impostos'
+import { calcularValorNotaFiscal, isPastDate } from '@/lib/services/ptax'
+import { usePTAX } from '@/hooks/usePTAX'
 import { Faturamento } from '@/types'
 import { format } from 'date-fns'
 import { DateInput, CurrencyInput, Checkbox } from '@/components/ui'
@@ -16,6 +18,12 @@ export default function FaturamentosPage() {
   const [exportacao, setExportacao] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Multi-currency fields for exports
+  const [valorUSD, setValorUSD] = useState<number | undefined>(undefined)
+  const [valorRecebido, setValorRecebido] = useState<number | undefined>(undefined)
+  const [manualPTAX, setManualPTAX] = useState<number | undefined>(undefined)
+  const { rate: ptaxRate, loading: ptaxLoading, error: ptaxError, fetchPTAX } = usePTAX()
 
   const supabase = createClient()
 
@@ -45,6 +53,24 @@ export default function FaturamentosPage() {
     }
   }
 
+  const handleFetchPTAX = async () => {
+    if (!data) {
+      setError('Selecione uma data primeiro')
+      return
+    }
+
+    const dataFormatada = format(data, 'yyyy-MM-dd')
+
+    // Validate past date for exports
+    if (!isPastDate(dataFormatada)) {
+      setError('Para exportação de serviços, a data deve ser anterior a hoje (PTAX só disponível após fechamento do dia)')
+      return
+    }
+
+    setError('')
+    await fetchPTAX(dataFormatada)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -58,20 +84,60 @@ export default function FaturamentosPage() {
         throw new Error('Data é obrigatória')
       }
 
-      if (!valorBruto || valorBruto <= 0) {
-        throw new Error('Valor inválido')
-      }
-
-      // Format date as YYYY-MM-DD for database
       const dataFormatada = format(data, 'yyyy-MM-dd')
 
-      // Calcular impostos
-      const impostos = calcularImpostosLucroPresumido(valorBruto, exportacao)
+      let insertData: any
 
-      // Inserir no banco
-      const { error: insertError } = await supabase
-        .from('faturamentos')
-        .insert({
+      if (exportacao) {
+        // Validate export-specific fields
+        if (!valorUSD || valorUSD <= 0) {
+          throw new Error('Valor USD é obrigatório para exportações')
+        }
+
+        const cotacao = manualPTAX || ptaxRate
+        if (!cotacao || cotacao <= 0) {
+          throw new Error('Busque a cotação PTAX ou insira manualmente')
+        }
+
+        if (!valorRecebido || valorRecebido <= 0) {
+          throw new Error('Valor recebido é obrigatório para exportações')
+        }
+
+        // Validate past date
+        if (!isPastDate(dataFormatada)) {
+          throw new Error('Para exportação de serviços, a data deve ser anterior a hoje')
+        }
+
+        // Calculate NF value
+        const valorNotaFiscal = calcularValorNotaFiscal(valorUSD, cotacao)
+
+        // Calculate taxes on NF value
+        const impostos = calcularImpostosLucroPresumido(valorNotaFiscal, true)
+
+        insertData = {
+          data: dataFormatada,
+          valor_bruto: valorNotaFiscal, // For backward compatibility
+          valor_usd: valorUSD,
+          cotacao_ptax: cotacao,
+          valor_nota_fiscal: valorNotaFiscal,
+          valor_recebido: valorRecebido,
+          irpj: impostos.irpj,
+          csll: impostos.csll,
+          pis: impostos.pis,
+          cofins: impostos.cofins,
+          total_impostos: impostos.total,
+          exportacao: true,
+          usuario_id: user.id,
+        }
+      } else {
+        // Normal faturamento
+        if (!valorBruto || valorBruto <= 0) {
+          throw new Error('Valor bruto é obrigatório')
+        }
+
+        const impostos = calcularImpostosLucroPresumido(valorBruto, false)
+
+        insertData = {
           data: dataFormatada,
           valor_bruto: valorBruto,
           irpj: impostos.irpj,
@@ -79,19 +145,28 @@ export default function FaturamentosPage() {
           pis: impostos.pis,
           cofins: impostos.cofins,
           total_impostos: impostos.total,
-          exportacao,
+          exportacao: false,
           usuario_id: user.id,
-        })
+        }
+      }
+
+      // Insert into database
+      const { error: insertError } = await supabase
+        .from('faturamentos')
+        .insert(insertData)
 
       if (insertError) throw insertError
 
-      // Resetar formulário
+      // Reset form
       setData(null)
       setValorBruto(undefined)
       setExportacao(false)
+      setValorUSD(undefined)
+      setValorRecebido(undefined)
+      setManualPTAX(undefined)
       setShowForm(false)
 
-      // Recarregar lista
+      // Reload list
       loadFaturamentos()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao cadastrar faturamento')
@@ -143,19 +218,7 @@ export default function FaturamentosPage() {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Valor Bruto (R$)
-              </label>
-              <CurrencyInput
-                id="valorBruto"
-                name="valorBruto"
-                placeholder="0,00"
-                value={valorBruto}
-                onValueChange={(value, name, values) => setValorBruto(values?.float ?? undefined)}
-                required
-              />
-            </div>
+
             <div className="flex items-center">
               <Checkbox
                 id="exportacao"
@@ -166,27 +229,152 @@ export default function FaturamentosPage() {
                 Exportação de serviços (isento de PIS e COFINS)
               </label>
             </div>
-            {valorBruto && valorBruto > 0 && (
-              <div className="bg-blue-50 p-4 rounded-md">
-                <h3 className="font-medium text-blue-900 mb-2">Impostos Calculados:</h3>
-                {(() => {
-                  const impostos = calcularImpostosLucroPresumido(valorBruto, exportacao)
-                  return (
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <p>IRPJ: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.irpj)}</p>
-                      <p>CSLL: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.csll)}</p>
-                      <p>PIS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.pis)}</p>
-                      <p>COFINS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.cofins)}</p>
-                      <p className="font-bold pt-2 border-t border-blue-200">
-                        Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.total)}
-                      </p>
-                      {exportacao && (
-                        <p className="text-xs text-blue-700 pt-2 italic">
-                          * PIS e COFINS isentos (exportação de serviços)
-                        </p>
+
+            {!exportacao ? (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Valor Bruto (R$)
+                </label>
+                <CurrencyInput
+                  id="valorBruto"
+                  name="valorBruto"
+                  placeholder="0,00"
+                  value={valorBruto}
+                  onValueChange={(value, name, values) => setValorBruto(values?.float ?? undefined)}
+                  required
+                />
+              </div>
+            ) : (
+              <div className="space-y-4 transition-all duration-200">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Valor Invoice (USD)
+                  </label>
+                  <CurrencyInput
+                    id="valorUSD"
+                    name="valorUSD"
+                    placeholder="0.00"
+                    value={valorUSD}
+                    onValueChange={(value, name, values) => setValorUSD(values?.float ?? undefined)}
+                    prefix="$"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Cotação PTAX
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (Taxa oficial Banco Central)
+                    </span>
+                  </label>
+                  <div className="flex gap-2">
+                    <CurrencyInput
+                      id="cotacaoPTAX"
+                      name="cotacaoPTAX"
+                      placeholder="0.0000"
+                      value={manualPTAX || ptaxRate || undefined}
+                      onValueChange={(value, name, values) => setManualPTAX(values?.float ?? undefined)}
+                      prefix="R$ "
+                      decimalsLimit={4}
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleFetchPTAX}
+                      disabled={!data || ptaxLoading}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      {ptaxLoading ? 'Buscando...' : 'Buscar PTAX'}
+                    </button>
+                  </div>
+                  {ptaxError && (
+                    <p className="text-xs text-destructive mt-1">{ptaxError}</p>
+                  )}
+                </div>
+
+                {valorUSD && (manualPTAX || ptaxRate) && (
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Valor Nota Fiscal (R$)
+                      <span className="text-xs text-muted-foreground ml-2">
+                        (Calculado: USD × PTAX)
+                      </span>
+                    </label>
+                    <div className="bg-muted px-4 py-3 rounded-md text-foreground font-medium">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                        calcularValorNotaFiscal(valorUSD, manualPTAX || ptaxRate || 0)
                       )}
                     </div>
-                  )
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Valor Recebido (R$)
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (Valor depositado na conta)
+                    </span>
+                  </label>
+                  <CurrencyInput
+                    id="valorRecebido"
+                    name="valorRecebido"
+                    placeholder="0,00"
+                    value={valorRecebido}
+                    onValueChange={(value, name, values) => setValorRecebido(values?.float ?? undefined)}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+            {((valorBruto && valorBruto > 0 && !exportacao) ||
+              (exportacao && valorUSD && (manualPTAX || ptaxRate) && valorRecebido)) && (
+              <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-md">
+                <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Resumo:</h3>
+                {(() => {
+                  if (exportacao && valorUSD && (manualPTAX || ptaxRate) && valorRecebido) {
+                    const cotacao = manualPTAX || ptaxRate || 0
+                    const valorNF = calcularValorNotaFiscal(valorUSD, cotacao)
+                    const impostos = calcularImpostosLucroPresumido(valorNF, true)
+                    const saldoLiquido = calcularSaldoLiquidoExportacao(valorNF, valorRecebido)
+
+                    return (
+                      <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                        <p>Valor NF: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorNF)}</p>
+                        <p>IRPJ: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.irpj)}</p>
+                        <p>CSLL: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.csll)}</p>
+                        <p>PIS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.pis)} <span className="text-xs">(isento)</span></p>
+                        <p>COFINS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.cofins)} <span className="text-xs">(isento)</span></p>
+                        <p className="font-bold pt-2 border-t border-blue-200 dark:border-blue-800">
+                          Total Impostos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.total)}
+                        </p>
+                        <p>Valor Recebido: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorRecebido)}</p>
+                        <p className="font-bold text-lg pt-2 border-t border-blue-200 dark:border-blue-800 text-green-700 dark:text-green-400">
+                          Saldo Líquido: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(saldoLiquido)}
+                        </p>
+                      </div>
+                    )
+                  } else if (valorBruto) {
+                    const impostos = calcularImpostosLucroPresumido(valorBruto, false)
+                    const liquido = valorBruto - impostos.total
+
+                    return (
+                      <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                        <p>Valor Bruto: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorBruto)}</p>
+                        <p>IRPJ: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.irpj)}</p>
+                        <p>CSLL: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.csll)}</p>
+                        <p>PIS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.pis)}</p>
+                        <p>COFINS: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.cofins)}</p>
+                        <p className="font-bold pt-2 border-t border-blue-200 dark:border-blue-800">
+                          Total Impostos: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(impostos.total)}
+                        </p>
+                        <p className="font-bold text-lg pt-2 border-t border-blue-200 dark:border-blue-800 text-green-700 dark:text-green-400">
+                          Líquido: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(liquido)}
+                        </p>
+                      </div>
+                    )
+                  }
+                  return null
                 })()}
               </div>
             )}
@@ -220,10 +408,13 @@ export default function FaturamentosPage() {
                     Data
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
-                    Exportação
+                    Tipo
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
-                    Valor Bruto
+                    Valor Bruto / NF
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
+                    Valor Recebido
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                     IRPJ
@@ -247,23 +438,45 @@ export default function FaturamentosPage() {
               </thead>
               <tbody className="bg-card divide-y divide-border">
                 {faturamentos.map((faturamento) => {
-                  const liquido = Number(faturamento.valor_bruto) - Number(faturamento.total_impostos)
+                  const isExport = faturamento.exportacao
+                  const valorBase = isExport && faturamento.valor_nota_fiscal
+                    ? faturamento.valor_nota_fiscal
+                    : faturamento.valor_bruto
+                  const valorRecebidoFinal = isExport && faturamento.valor_recebido
+                    ? faturamento.valor_recebido
+                    : faturamento.valor_bruto
+                  const liquido = valorRecebidoFinal - Number(faturamento.total_impostos)
+
                   return (
                     <tr key={faturamento.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {new Date(faturamento.data).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        {faturamento.exportacao ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Sim
+                        {isExport ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            🌍 Export
                           </span>
                         ) : (
-                          <span className="text-muted-foreground">-</span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            Nacional
+                          </span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.valor_bruto))}
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valorBase))}
+                        {isExport && faturamento.valor_usd && (
+                          <div className="text-xs text-muted-foreground">
+                            ${Number(faturamento.valor_usd).toFixed(2)} × {Number(faturamento.cotacao_ptax).toFixed(4)}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+                        {isExport ? (
+                          new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valorRecebidoFinal))
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.irpj))}
@@ -273,9 +486,11 @@ export default function FaturamentosPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.pis))}
+                        {isExport && <span className="text-xs"> (isento)</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.cofins))}
+                        {isExport && <span className="text-xs"> (isento)</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-destructive font-medium">
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.total_impostos))}

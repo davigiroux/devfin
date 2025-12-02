@@ -2,8 +2,10 @@ import {
   calcularImpostosLucroPresumido,
   getPercentualTotalImpostos,
   calcularValorLiquido,
+  calcularSaldoLiquidoExportacao,
   ALIQUOTAS,
 } from '@/lib/calculations/impostos'
+import { calcularValorNotaFiscal, isPastDate } from '@/lib/services/ptax'
 
 describe('Cálculo de Impostos - Lucro Presumido', () => {
   describe('calcularImpostosLucroPresumido', () => {
@@ -191,6 +193,152 @@ describe('Cálculo de Impostos - Lucro Presumido', () => {
         const valorLiquido = calcularValorLiquido(valorBruto, true)
 
         expect(valorLiquido).toBe(11397.52) // 12345.67 - 948.15 = 11397.52
+      })
+    })
+  })
+
+  describe('Multi-Currency (USD → BRL)', () => {
+    describe('calcularValorNotaFiscal', () => {
+      it('deve calcular valor NF corretamente (USD × PTAX)', () => {
+        const valorUSD = 10000
+        const cotacaoPTAX = 5.25
+        const valorNF = calcularValorNotaFiscal(valorUSD, cotacaoPTAX)
+
+        expect(valorNF).toBe(52500) // 10000 * 5.25
+      })
+
+      it('deve arredondar para 2 casas decimais', () => {
+        const valorUSD = 1234.56
+        const cotacaoPTAX = 5.4321
+        const valorNF = calcularValorNotaFiscal(valorUSD, cotacaoPTAX)
+
+        expect(valorNF).toBe(6706.52) // 1234.56 * 5.4321 = 6706.515376, arredondado para 6706.52
+      })
+
+      it('deve retornar 0 quando USD é 0', () => {
+        const valorNF = calcularValorNotaFiscal(0, 5.25)
+        expect(valorNF).toBe(0)
+      })
+
+      it('deve retornar 0 quando PTAX é 0', () => {
+        const valorNF = calcularValorNotaFiscal(10000, 0)
+        expect(valorNF).toBe(0)
+      })
+    })
+
+    describe('calcularSaldoLiquidoExportacao', () => {
+      it('deve calcular saldo líquido corretamente (valor_recebido - impostos)', () => {
+        const valorNotaFiscal = 100000 // Base para impostos
+        const valorRecebido = 95000 // Valor real recebido (menor devido a fees)
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNotaFiscal, valorRecebido)
+
+        // Impostos sobre 100k: 7680 (IRPJ + CSLL only)
+        // Saldo: 95000 - 7680 = 87320
+        expect(saldoLiquido).toBe(87320)
+      })
+
+      it('deve usar apenas IRPJ e CSLL (PIS e COFINS isentos)', () => {
+        const valorNotaFiscal = 50000
+        const valorRecebido = 48000
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNotaFiscal, valorRecebido)
+
+        // Impostos sobre 50k: 3840 (IRPJ 2400 + CSLL 1440)
+        // Saldo: 48000 - 3840 = 44160
+        expect(saldoLiquido).toBe(44160)
+      })
+
+      it('deve calcular corretamente quando valor_recebido > valor_nota_fiscal', () => {
+        const valorNotaFiscal = 100000
+        const valorRecebido = 105000 // Cotação melhor que PTAX
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNotaFiscal, valorRecebido)
+
+        // Impostos sobre 100k: 7680
+        // Saldo: 105000 - 7680 = 97320
+        expect(saldoLiquido).toBe(97320)
+      })
+
+      it('deve retornar valor negativo quando impostos > valor_recebido', () => {
+        const valorNotaFiscal = 100000
+        const valorRecebido = 5000 // Muito baixo
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNotaFiscal, valorRecebido)
+
+        // Impostos: 7680, Recebido: 5000
+        // Saldo: 5000 - 7680 = -2680
+        expect(saldoLiquido).toBe(-2680)
+      })
+
+      it('deve arredondar para 2 casas decimais', () => {
+        const valorNotaFiscal = 12345.67
+        const valorRecebido = 12000.00
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNotaFiscal, valorRecebido)
+
+        // Impostos sobre 12345.67: 948.15
+        // Saldo: 12000 - 948.15 = 11051.85
+        expect(saldoLiquido).toBe(11051.85)
+      })
+    })
+
+    describe('isPastDate', () => {
+      it('deve retornar true para data passada', () => {
+        const yesterday = new Date()
+        yesterday.setDate(yesterday.getDate() - 1)
+        const dateString = yesterday.toISOString().split('T')[0]
+
+        expect(isPastDate(dateString)).toBe(true)
+      })
+
+      it('deve retornar false para data de hoje', () => {
+        const today = new Date().toISOString().split('T')[0]
+        expect(isPastDate(today)).toBe(false)
+      })
+
+      it('deve retornar false para data futura', () => {
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const dateString = tomorrow.toISOString().split('T')[0]
+
+        expect(isPastDate(dateString)).toBe(false)
+      })
+    })
+
+    describe('Fluxo completo: USD → PTAX → NF → Impostos → Saldo', () => {
+      it('deve calcular corretamente todo o fluxo', () => {
+        // Cenário: $10,000 USD com PTAX 5.50, recebeu R$ 54,000
+        const valorUSD = 10000
+        const cotacaoPTAX = 5.50
+        const valorRecebido = 54000
+
+        // 1. Calcular valor NF
+        const valorNF = calcularValorNotaFiscal(valorUSD, cotacaoPTAX)
+        expect(valorNF).toBe(55000) // 10000 * 5.50
+
+        // 2. Calcular impostos sobre valor NF
+        const impostos = calcularImpostosLucroPresumido(valorNF, true)
+        expect(impostos.irpj).toBe(2640) // 55000 * 0.048
+        expect(impostos.csll).toBe(1584) // 55000 * 0.0288
+        expect(impostos.pis).toBe(0) // Isento
+        expect(impostos.cofins).toBe(0) // Isento
+        expect(impostos.total).toBe(4224) // 2640 + 1584
+
+        // 3. Calcular saldo líquido
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNF, valorRecebido)
+        expect(saldoLiquido).toBe(49776) // 54000 - 4224
+      })
+
+      it('deve calcular corretamente com cotação desfavorável', () => {
+        // Cenário: $5,000 USD com PTAX 6.00, mas recebeu apenas R$ 28,000 (fees altos)
+        const valorUSD = 5000
+        const cotacaoPTAX = 6.00
+        const valorRecebido = 28000
+
+        const valorNF = calcularValorNotaFiscal(valorUSD, cotacaoPTAX)
+        expect(valorNF).toBe(30000)
+
+        const impostos = calcularImpostosLucroPresumido(valorNF, true)
+        expect(impostos.total).toBe(2304) // IRPJ 1440 + CSLL 864
+
+        const saldoLiquido = calcularSaldoLiquidoExportacao(valorNF, valorRecebido)
+        expect(saldoLiquido).toBe(25696) // 28000 - 2304
       })
     })
   })

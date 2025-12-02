@@ -17,9 +17,22 @@ export interface Faturamento {
   cofins: number
   total_impostos: number
   exportacao: boolean
+  // Multi-currency fields (for export services)
+  valor_usd?: number
+  cotacao_ptax?: number
+  valor_nota_fiscal?: number
+  valor_recebido?: number
   usuario_id: string
   created_at: string
   updated_at: string
+}
+
+export interface PTAXRate {
+  id: string
+  date: string
+  rate_venda: number
+  fetched_at: string
+  created_at: string
 }
 
 export interface ImpostosCalculados {

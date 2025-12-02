@@ -80,3 +80,22 @@ export function calcularValorLiquido(valorBruto: number, exportacao = false): nu
   const impostos = calcularImpostosLucroPresumido(valorBruto, exportacao)
   return Math.round((valorBruto - impostos.total) * 100) / 100
 }
+
+/**
+ * Calcula o saldo líquido para exportações (valor recebido - impostos)
+ * Para exportações, impostos são calculados sobre valor_nota_fiscal (USD × PTAX),
+ * mas o saldo líquido é: valor_recebido - impostos
+ *
+ * @param valorNotaFiscal - Valor da NF (USD × PTAX) para cálculo de impostos
+ * @param valorRecebido - Valor real recebido na conta bancária
+ * @returns Saldo líquido (valor_recebido - impostos)
+ */
+export function calcularSaldoLiquidoExportacao(
+  valorNotaFiscal: number,
+  valorRecebido: number
+): number {
+  // Impostos calculados sobre valor_nota_fiscal (base legal)
+  const impostos = calcularImpostosLucroPresumido(valorNotaFiscal, true)
+  // Saldo = valor_recebido - impostos
+  return Math.round((valorRecebido - impostos.total) * 100) / 100
+}
