@@ -173,7 +173,11 @@ export default function DashboardCharts({
       }
 
       const data = monthlyData.get(key)!;
-      data.revenue += Number(f.valor_bruto);
+      // For exports, use valor_recebido (actual cash flow), otherwise use valor_bruto
+      const revenueAmount = f.exportacao && f.valor_recebido
+        ? Number(f.valor_recebido)
+        : Number(f.valor_bruto);
+      data.revenue += revenueAmount;
       data.irpj += Number(f.irpj);
       data.csll += Number(f.csll);
       data.pis += Number(f.pis);
