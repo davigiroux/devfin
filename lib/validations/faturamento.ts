@@ -27,19 +27,18 @@ export const faturamentoSchema = z
   )
   .refine(
     (data) => {
-      // For exports, all currency fields are required
+      // For exports, USD and PTAX required; valor_recebido optional (can add later)
       if (data.exportacao) {
         return (
           data.valor_usd !== undefined &&
           data.cotacao_ptax !== undefined &&
-          data.valor_nota_fiscal !== undefined &&
-          data.valor_recebido !== undefined
+          data.valor_nota_fiscal !== undefined
         )
       }
       return true
     },
     {
-      message: 'Para exportação de serviços, todos os campos de moeda são obrigatórios',
+      message: 'Para exportação de serviços, valor USD e cotação PTAX são obrigatórios',
       path: ['exportacao'],
     }
   )

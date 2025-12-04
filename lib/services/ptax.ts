@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import type { PTAXRate } from '@/types'
 
 interface PTAXAPIResponse {
   value: Array<{

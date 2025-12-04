@@ -18,10 +18,10 @@ export interface Faturamento {
   total_impostos: number
   exportacao: boolean
   // Multi-currency fields (for export services)
-  valor_usd?: number
-  cotacao_ptax?: number
-  valor_nota_fiscal?: number
-  valor_recebido?: number
+  valor_usd?: number | null
+  cotacao_ptax?: number | null
+  valor_nota_fiscal?: number | null
+  valor_recebido?: number | null
   usuario_id: string
   created_at: string
   updated_at: string

@@ -212,7 +212,7 @@ describe('Cálculo de Impostos - Lucro Presumido', () => {
         const cotacaoPTAX = 5.4321
         const valorNF = calcularValorNotaFiscal(valorUSD, cotacaoPTAX)
 
-        expect(valorNF).toBe(6706.52) // 1234.56 * 5.4321 = 6706.515376, arredondado para 6706.52
+        expect(valorNF).toBe(6706.25) // 1234.56 * 5.4321 with floating point precision
       })
 
       it('deve retornar 0 quando USD é 0', () => {
