@@ -58,6 +58,9 @@ const config: Config = {
           expenses: "hsl(var(--chart-expenses))",
         },
       },
+      borderColor: {
+        DEFAULT: "hsl(var(--border))",
+      },
     },
   },
   plugins: [],
