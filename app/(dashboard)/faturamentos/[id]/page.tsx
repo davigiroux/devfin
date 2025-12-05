@@ -163,25 +163,33 @@ export default function FaturamentoDetailPage() {
   const totalDespesas = despesasMes.reduce((acc, d) => acc + d.valor, 0)
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <Link href="/faturamentos" className="text-primary hover:underline text-sm mb-2 inline-block">
-          ← Voltar para lista
+      <div className="mb-8">
+        <Link href="/faturamentos" className="text-primary hover:text-primary/80 text-sm mb-3 inline-flex items-center gap-1 transition-colors">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Voltar para lista
         </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-foreground">
-            Faturamento - {new Date(faturamento.data).toLocaleDateString('pt-BR')}
-          </h1>
-          {isExport ? (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              Export
-            </span>
-          ) : (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              Nacional
-            </span>
-          )}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">
+              {new Date(faturamento.data).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())}
+            </h1>
+            {isExport ? (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
+                Export
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                Nacional
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {new Date(faturamento.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+          </p>
         </div>
       </div>
 
@@ -192,27 +200,34 @@ export default function FaturamentoDetailPage() {
       )}
 
       {/* Main Info Card */}
-      <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Informações</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Valor {isExport ? 'Nota Fiscal' : 'Bruto'}</p>
-            <p className="text-lg font-medium text-foreground">
+      <div className="bg-card rounded-xl shadow-sm border p-8 mb-8">
+        <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          Informações
+        </h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+              Valor {isExport ? 'Nota Fiscal' : 'Bruto'}
+            </p>
+            <p className="text-2xl font-bold text-foreground">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorBase)}
             </p>
           </div>
 
           {isExport && faturamento.valor_usd && (
             <>
-              <div>
-                <p className="text-sm text-muted-foreground">Valor USD</p>
-                <p className="text-lg font-medium text-foreground">
-                  ${Number(faturamento.valor_usd).toFixed(2)}
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Valor USD</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  ${Number(faturamento.valor_usd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Cotação PTAX</p>
-                <p className="text-lg font-medium text-foreground">
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Cotação PTAX</p>
+                <p className="text-2xl font-bold text-foreground">
                   R$ {Number(faturamento.cotacao_ptax).toFixed(4)}
                 </p>
               </div>
@@ -220,57 +235,55 @@ export default function FaturamentoDetailPage() {
           )}
 
           {isExport && (
-            <div className="col-span-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Valor Recebido</p>
-                  {!isEditing ? (
-                    <div className="flex items-center gap-2">
-                      {hasValorRecebido ? (
-                        <p className="text-lg font-medium text-foreground">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.valor_recebido))}
-                        </p>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                          Pendente
-                        </span>
-                      )}
-                      <button
-                        onClick={() => setIsEditing(true)}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        {hasValorRecebido ? 'Editar' : 'Adicionar'}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 mt-1">
-                      <CurrencyInput
-                        id="valorRecebido"
-                        name="valorRecebido"
-                        placeholder="0,00"
-                        value={valorRecebido}
-                        onValueChange={(value, name, values) => setValorRecebido(values?.float ?? undefined)}
-                        className="w-40"
-                      />
-                      <button
-                        onClick={handleSaveValorRecebido}
-                        disabled={saving}
-                        className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-sm hover:bg-primary/90 disabled:opacity-50"
-                      >
-                        {saving ? 'Salvando...' : 'Salvar'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsEditing(false)
-                          setValorRecebido(faturamento.valor_recebido ?? undefined)
-                        }}
-                        className="text-muted-foreground hover:text-foreground text-sm"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  )}
-                </div>
+            <div className="sm:col-span-2 lg:col-span-3 pt-4 border-t border-border/50">
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Valor Recebido</p>
+                {!isEditing ? (
+                  <div className="flex items-center gap-3">
+                    {hasValorRecebido ? (
+                      <p className="text-2xl font-bold text-foreground">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.valor_recebido))}
+                      </p>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        Pendente
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                    >
+                      {hasValorRecebido ? 'Editar' : 'Adicionar'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <CurrencyInput
+                      id="valorRecebido"
+                      name="valorRecebido"
+                      placeholder="0,00"
+                      value={valorRecebido}
+                      onValueChange={(value, name, values) => setValorRecebido(values?.float ?? undefined)}
+                      className="w-48"
+                    />
+                    <button
+                      onClick={handleSaveValorRecebido}
+                      disabled={saving}
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    >
+                      {saving ? 'Salvando...' : 'Salvar'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false)
+                        setValorRecebido(faturamento.valor_recebido ?? undefined)
+                      }}
+                      className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -278,78 +291,83 @@ export default function FaturamentoDetailPage() {
       </div>
 
       {/* Tax Breakdown Card */}
-      <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Detalhamento de Impostos</h2>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b border-border">
+      <div className="bg-card rounded-xl shadow-sm border p-8 mb-8">
+        <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+          </svg>
+          Detalhamento de Impostos
+        </h2>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
             <div>
-              <p className="font-medium text-foreground">IRPJ</p>
+              <p className="font-semibold text-foreground">IRPJ</p>
               <p className="text-xs text-muted-foreground">{(ALIQUOTAS.IRPJ * 100).toFixed(1)}% sobre valor bruto</p>
             </div>
-            <p className="font-medium text-foreground">
+            <p className="font-bold text-foreground">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.irpj))}
             </p>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-border">
+          <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
             <div>
-              <p className="font-medium text-foreground">CSLL</p>
+              <p className="font-semibold text-foreground">CSLL</p>
               <p className="text-xs text-muted-foreground">{(ALIQUOTAS.CSLL * 100).toFixed(2)}% sobre valor bruto</p>
             </div>
-            <p className="font-medium text-foreground">
+            <p className="font-bold text-foreground">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.csll))}
             </p>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-border">
+          <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
             <div>
-              <p className="font-medium text-foreground">PIS</p>
+              <p className="font-semibold text-foreground">PIS</p>
               <p className="text-xs text-muted-foreground">
                 {(ALIQUOTAS.PIS * 100).toFixed(2)}% sobre valor bruto
                 {isExport && ' (isento)'}
               </p>
             </div>
-            <p className={`font-medium ${isExport ? 'text-muted-foreground' : 'text-foreground'}`}>
+            <p className={`font-bold ${isExport ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.pis))}
-              {isExport && <span className="text-xs ml-1">(isento)</span>}
+              {isExport && <span className="text-xs ml-2 no-underline">(isento)</span>}
             </p>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-border">
+          <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
             <div>
-              <p className="font-medium text-foreground">COFINS</p>
+              <p className="font-semibold text-foreground">COFINS</p>
               <p className="text-xs text-muted-foreground">
                 {(ALIQUOTAS.COFINS * 100).toFixed(1)}% sobre valor bruto
                 {isExport && ' (isento)'}
               </p>
             </div>
-            <p className={`font-medium ${isExport ? 'text-muted-foreground' : 'text-foreground'}`}>
+            <p className={`font-bold ${isExport ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.cofins))}
-              {isExport && <span className="text-xs ml-1">(isento)</span>}
+              {isExport && <span className="text-xs ml-2 no-underline">(isento)</span>}
             </p>
           </div>
-          <div className="flex justify-between items-center py-3 bg-muted/50 rounded px-3 -mx-3">
+          <div className="flex justify-between items-center py-4 px-4 rounded-lg bg-destructive/10 border border-destructive/20">
             <p className="font-bold text-foreground">Total Impostos</p>
-            <p className="font-bold text-destructive">
+            <p className="font-bold text-xl text-destructive">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(faturamento.total_impostos))}
             </p>
           </div>
         </div>
 
         {/* Saldo Líquido */}
-        <div className="mt-6 pt-4 border-t border-border">
+        <div className="mt-6 pt-6 border-t border-border/50">
           {saldoLiquido !== null ? (
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center py-4 px-4 rounded-lg bg-success/10 border border-success/20">
               <div>
                 <p className="font-bold text-lg text-foreground">Saldo Líquido</p>
                 <p className="text-xs text-muted-foreground">
                   {isExport ? 'Valor recebido - impostos' : 'Valor bruto - impostos'}
                 </p>
               </div>
-              <p className="font-bold text-xl text-success">
+              <p className="font-bold text-2xl text-success">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(saldoLiquido)}
               </p>
             </div>
           ) : (
-            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded p-4">
-              <p className="text-amber-800 dark:text-amber-200 text-sm">
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+              <p className="text-amber-600 dark:text-amber-400 text-sm">
                 Preencha o valor recebido para calcular o saldo líquido final.
               </p>
             </div>
@@ -358,72 +376,104 @@ export default function FaturamentoDetailPage() {
       </div>
 
       {/* Despesas do Mês */}
-      <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-foreground">Despesas de {mesAno}</h2>
-          <Link href="/despesas" className="text-sm text-primary hover:underline">
-            Ver todas →
+      <div className="bg-card rounded-xl shadow-sm border p-8 mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Despesas de {mesAno.replace(/^\w/, c => c.toUpperCase())}
+          </h2>
+          <Link href="/despesas" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1">
+            Ver todas
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
 
         {despesasMes.length > 0 ? (
           <>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {despesasMes.map((despesa) => (
-                <div key={despesa.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
+                <div key={despesa.id} className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div>
-                    <p className="font-medium text-foreground">{despesa.descricao}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {despesa.tipo === 'imposto' ? 'Imposto' : 'Compromisso'} • Venc. dia {despesa.dia_vencimento}
-                    </p>
+                    <p className="font-semibold text-foreground">{despesa.descricao}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        despesa.tipo === 'imposto'
+                          ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                          : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                      }`}>
+                        {despesa.tipo === 'imposto' ? 'Imposto' : 'Compromisso'}
+                      </span>
+                      <p className="text-xs text-muted-foreground">
+                        Venc. dia {despesa.dia_vencimento}
+                      </p>
+                    </div>
                   </div>
-                  <p className="font-medium text-foreground">
+                  <p className="font-bold text-foreground">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(despesa.valor)}
                   </p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
+            <div className="mt-6 pt-6 border-t border-border/50 flex justify-between items-center py-3 px-4 rounded-lg bg-destructive/10 border border-destructive/20">
               <p className="font-bold text-foreground">Total Despesas</p>
-              <p className="font-bold text-destructive">
+              <p className="font-bold text-xl text-destructive">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalDespesas)}
               </p>
             </div>
           </>
         ) : (
-          <p className="text-muted-foreground text-sm">Nenhuma despesa cadastrada para este mês.</p>
+          <div className="text-center py-8">
+            <svg className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p className="text-muted-foreground text-sm">Nenhuma despesa cadastrada para este mês.</p>
+          </div>
         )}
       </div>
 
       {/* Delete Section */}
-      <div className="bg-card rounded-lg shadow-sm border border-destructive/20 p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-2">Zona de Perigo</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Esta ação não pode ser desfeita. O faturamento será permanentemente excluído.
-        </p>
+      <div className="bg-card rounded-xl shadow-sm border border-destructive/30 p-8">
+        <div className="flex items-start gap-3 mb-4">
+          <svg className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <h2 className="text-xl font-bold text-foreground mb-1">Zona de Perigo</h2>
+            <p className="text-sm text-muted-foreground">
+              Esta ação não pode ser desfeita. O faturamento será permanentemente excluído.
+            </p>
+          </div>
+        </div>
 
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="bg-destructive text-destructive-foreground px-4 py-2 rounded hover:bg-destructive/90"
+            className="bg-destructive text-destructive-foreground px-5 py-2.5 rounded-lg hover:bg-destructive/90 font-medium transition-colors"
           >
             Excluir Faturamento
           </button>
         ) : (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground px-4 py-2 rounded hover:bg-destructive/90 disabled:opacity-50"
-            >
-              {deleting ? 'Excluindo...' : 'Confirmar Exclusão'}
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Cancelar
-            </button>
+          <div className="flex flex-wrap items-center gap-3 bg-destructive/10 border border-destructive/20 p-4 rounded-lg">
+            <p className="text-sm text-foreground font-medium flex-grow">Tem certeza? Esta ação é permanente.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg hover:bg-destructive/90 disabled:opacity-50 font-medium transition-colors"
+              >
+                {deleting ? 'Excluindo...' : 'Sim, Excluir'}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="bg-muted text-foreground px-4 py-2 rounded-lg hover:bg-muted/80 font-medium transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         )}
       </div>
