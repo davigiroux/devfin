@@ -269,15 +269,17 @@ export default function FaturamentosPage() {
                     </span>
                   </label>
                   <div className="flex gap-2">
-                    <CurrencyInput
+                    <input
+                      type="text"
                       id="cotacaoPTAX"
                       name="cotacaoPTAX"
                       placeholder="0.0000"
-                      value={manualPTAX || ptaxRate || undefined}
-                      onValueChange={(value, name, values) => setManualPTAX(values?.float ?? undefined)}
-                      prefix="R$ "
-                      decimalsLimit={4}
-                      className="flex-1"
+                      value={manualPTAX || ptaxRate || ''}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value)
+                        setManualPTAX(isNaN(val) ? undefined : val)
+                      }}
+                      className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     />
                     <button
                       type="button"
