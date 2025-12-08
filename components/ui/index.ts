@@ -12,5 +12,8 @@ export type { DateInputProps } from './DateInput'
 export { default as CurrencyInput } from './CurrencyInput'
 export type { CurrencyInputProps } from './CurrencyInput'
 
+export { default as NumberInput } from './NumberInput'
+export type { NumberInputProps } from './NumberInput'
+
 export { default as FormControl } from './FormControl'
 export type { FormControlProps } from './FormControl'
