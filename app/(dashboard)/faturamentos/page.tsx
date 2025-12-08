@@ -7,7 +7,7 @@ import { calcularValorNotaFiscal, isPastDate } from '@/lib/services/ptax'
 import { usePTAX } from '@/hooks/usePTAX'
 import { Faturamento } from '@/types'
 import { format } from 'date-fns'
-import { DateInput, CurrencyInput, Checkbox } from '@/components/ui'
+import { DateInput, CurrencyInput, NumberInput, Checkbox } from '@/components/ui'
 import Link from 'next/link'
 
 export default function FaturamentosPage() {
@@ -269,14 +269,12 @@ export default function FaturamentosPage() {
                     </span>
                   </label>
                   <div className="flex gap-2">
-                    <CurrencyInput
+                    <NumberInput
                       id="cotacaoPTAX"
                       name="cotacaoPTAX"
                       placeholder="0.0000"
                       value={manualPTAX || ptaxRate || undefined}
-                      onValueChange={(value, name, values) => setManualPTAX(values?.float ?? undefined)}
-                      prefix="R$ "
-                      decimalsLimit={4}
+                      onValueChange={setManualPTAX}
                       className="flex-1"
                     />
                     <button
