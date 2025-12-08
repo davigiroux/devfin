@@ -273,7 +273,7 @@ export default function FaturamentosPage() {
                       id="cotacaoPTAX"
                       name="cotacaoPTAX"
                       placeholder="0.0000"
-                      value={manualPTAX || ptaxRate}
+                      value={manualPTAX || ptaxRate || undefined}
                       onValueChange={setManualPTAX}
                       className="flex-1"
                     />
