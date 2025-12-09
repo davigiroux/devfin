@@ -28,6 +28,9 @@ export default function FaturamentoDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  // Despesas toggle state
+  const [includeDespesas, setIncludeDespesas] = useState(true)
+
   const supabase = createClient()
 
   useEffect(() => {
@@ -152,15 +155,20 @@ export default function FaturamentoDetailPage() {
     ? Number(faturamento.valor_nota_fiscal)
     : Number(faturamento.valor_bruto)
   const hasValorRecebido = isExport && faturamento.valor_recebido != null
-  const saldoLiquido = hasValorRecebido
+
+  const faturamentoDate = new Date(faturamento.data)
+  const mesAno = faturamentoDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  const totalDespesas = despesasMes.reduce((acc, d) => acc + d.valor, 0)
+
+  const saldoLiquidoSemDespesas = hasValorRecebido
     ? calcularSaldoLiquidoExportacao(valorBase, Number(faturamento.valor_recebido))
     : !isExport
       ? Number(faturamento.valor_bruto) - Number(faturamento.total_impostos)
       : null
 
-  const faturamentoDate = new Date(faturamento.data)
-  const mesAno = faturamentoDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-  const totalDespesas = despesasMes.reduce((acc, d) => acc + d.valor, 0)
+  const saldoLiquido = saldoLiquidoSemDespesas !== null
+    ? (includeDespesas ? saldoLiquidoSemDespesas - totalDespesas : saldoLiquidoSemDespesas)
+    : null
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -351,50 +359,40 @@ export default function FaturamentoDetailPage() {
           </div>
         </div>
 
-        {/* Saldo Líquido */}
+        {/* Despesas do Mês */}
         <div className="mt-6 pt-6 border-t border-border/50">
-          {saldoLiquido !== null ? (
-            <div className="flex justify-between items-center py-4 px-4 rounded-lg bg-success/10 border border-success/20">
-              <div>
-                <p className="font-bold text-lg text-foreground">Saldo Líquido</p>
-                <p className="text-xs text-muted-foreground">
-                  {isExport ? 'Valor recebido - impostos' : 'Valor bruto - impostos'}
-                </p>
-              </div>
-              <p className="font-bold text-2xl text-success">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(saldoLiquido)}
-              </p>
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Despesas de {mesAno.replace(/^\w/, c => c.toUpperCase())}
+              </h3>
+              <button
+                onClick={() => setIncludeDespesas(!includeDespesas)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  includeDespesas
+                    ? 'bg-primary/10 text-primary border border-primary/20'
+                    : 'bg-muted text-muted-foreground border border-border'
+                }`}
+              >
+                {includeDespesas ? 'Incluídas' : 'Excluídas'}
+              </button>
             </div>
-          ) : (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-              <p className="text-amber-600 dark:text-amber-400 text-sm">
-                Preencha o valor recebido para calcular o saldo líquido final.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+            <Link href="/despesas" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1">
+              Ver todas
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
 
-      {/* Despesas do Mês */}
-      <div className="bg-card rounded-xl shadow-sm border p-8 mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            Despesas de {mesAno.replace(/^\w/, c => c.toUpperCase())}
-          </h2>
-          <Link href="/despesas" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1">
-            Ver todas
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-
-        {despesasMes.length > 0 ? (
-          <>
-            <div className="space-y-3">
+          {includeDespesas && (
+            <>
+              {despesasMes.length > 0 ? (
+                <>
+                  <div className="space-y-3">
               {despesasMes.map((despesa) => (
                 <div key={despesa.id} className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div>
@@ -433,6 +431,34 @@ export default function FaturamentoDetailPage() {
             <p className="text-muted-foreground text-sm">Nenhuma despesa cadastrada para este mês.</p>
           </div>
         )}
+              </>
+            )}
+        </div>
+
+        {/* Saldo Líquido */}
+        <div className="mt-6 pt-6 border-t border-border/50">
+          {saldoLiquido !== null ? (
+            <div className="flex justify-between items-center py-4 px-4 rounded-lg bg-success/10 border border-success/20">
+              <div>
+                <p className="font-bold text-lg text-foreground">Saldo Líquido</p>
+                <p className="text-xs text-muted-foreground">
+                  {isExport
+                    ? `Valor recebido - impostos${includeDespesas ? ' - despesas' : ''}`
+                    : `Valor bruto - impostos${includeDespesas ? ' - despesas' : ''}`}
+                </p>
+              </div>
+              <p className={`font-bold text-2xl ${saldoLiquido >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(saldoLiquido)}
+              </p>
+            </div>
+          ) : (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+              <p className="text-amber-600 dark:text-amber-400 text-sm">
+                Preencha o valor recebido para calcular o saldo líquido final.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Delete Section */}
