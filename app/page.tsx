@@ -1,8 +1,8 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-blue-100 dark:from-background dark:to-background">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold text-foreground mb-4">DevFin</h1>
@@ -28,25 +28,34 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <div className="bg-card p-6 rounded-lg shadow-md">
             <div className="text-3xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-2 text-foreground">Cálculo de Impostos</h3>
+            <h3 className="text-xl font-bold mb-2 text-foreground">
+              Cálculo de Impostos
+            </h3>
             <p className="text-muted-foreground">
-              Calcule automaticamente IRPJ, CSLL, PIS e COFINS baseado no Lucro Presumido
+              Calcule automaticamente IRPJ, CSLL, PIS e COFINS baseado no Lucro
+              Presumido
             </p>
           </div>
 
           <div className="bg-card p-6 rounded-lg shadow-md">
             <div className="text-3xl mb-4">👥</div>
-            <h3 className="text-xl font-bold mb-2 text-foreground">Gestão de Sócios</h3>
+            <h3 className="text-xl font-bold mb-2 text-foreground">
+              Gestão de Sócios
+            </h3>
             <p className="text-muted-foreground">
-              Gerencie sócios e calcule INSS pró-labore proporcional automaticamente
+              Gerencie sócios e calcule INSS pró-labore proporcional
+              automaticamente
             </p>
           </div>
 
           <div className="bg-card p-6 rounded-lg shadow-md">
             <div className="text-3xl mb-4">💰</div>
-            <h3 className="text-xl font-bold mb-2 text-foreground">Faturamentos</h3>
+            <h3 className="text-xl font-bold mb-2 text-foreground">
+              Faturamentos
+            </h3>
             <p className="text-muted-foreground">
-              Registre e acompanhe seus faturamentos mensais com impostos calculados
+              Registre e acompanhe seus faturamentos mensais com impostos
+              calculados
             </p>
           </div>
         </div>
@@ -56,5 +65,5 @@ export default function HomePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
