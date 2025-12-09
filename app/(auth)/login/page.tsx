@@ -51,8 +51,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full space-y-8 p-8 bg-card rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100 dark:from-background dark:to-background">
+      <div className="max-w-md w-full space-y-8 p-8 bg-card rounded-lg shadow-md dark:shadow-none dark:border dark:border-border">
         <div>
           <div className="flex justify-center">
             <Image src="/logo.svg" alt="DevFin" width={160} height={40} priority />
@@ -63,7 +63,7 @@ export default function LoginPage() {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded">
               {error}
             </div>
           )}
