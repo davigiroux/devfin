@@ -1,7 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Metadata } from 'next'
-import DashboardCharts from '@/components/DashboardCharts'
+import YearSummaryCards from '@/components/dashboard/YearSummaryCards'
+import LastFaturamentosTable from '@/components/dashboard/LastFaturamentosTable'
+import QuarterlyView from '@/components/dashboard/QuarterlyView'
+import TaxComparisonCharts from '@/components/dashboard/TaxComparisonCharts'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -20,7 +23,7 @@ export default async function DashboardPage() {
     .eq('id', user!.id)
     .single()
 
-  // Fetch all faturamentos for charts
+  // Fetch all faturamentos
   const { data: faturamentos } = await supabase
     .from('faturamentos')
     .select('*')
@@ -34,15 +37,9 @@ export default async function DashboardPage() {
     .eq('usuario_id', user!.id)
     .order('created_at', { ascending: false })
 
-  // Fetch all pagamentos
-  const { data: pagamentos } = await supabase
-    .from('pagamentos_despesas')
-    .select('*')
-    .order('ano_referencia', { ascending: false })
-
   return (
-    <div>
-      <div className="mb-8">
+    <div className="space-y-8">
+      <div>
         <h1 className="text-3xl font-bold text-foreground">
           Bem-vindo, {userData?.nome_completo || 'Usuário'}!
         </h1>
@@ -50,11 +47,25 @@ export default async function DashboardPage() {
       </div>
 
       {faturamentos && faturamentos.length > 0 ? (
-        <DashboardCharts
-          faturamentos={faturamentos}
-          despesas={despesas || []}
-          pagamentos={pagamentos || []}
-        />
+        <>
+          {/* Year Summary Cards */}
+          <YearSummaryCards
+            faturamentos={faturamentos}
+            despesas={despesas || []}
+          />
+
+          {/* Last 5 Faturamentos Table */}
+          <LastFaturamentosTable faturamentos={faturamentos} />
+
+          {/* Quarterly View */}
+          <QuarterlyView
+            faturamentos={faturamentos}
+            despesas={despesas || []}
+          />
+
+          {/* Tax Comparison Charts */}
+          <TaxComparisonCharts faturamentos={faturamentos} />
+        </>
       ) : (
         <div className="bg-card p-12 rounded-lg shadow-sm border text-center">
           <p className="text-muted-foreground mb-4">
@@ -73,7 +84,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Quick Links */}
-      <div className="grid md:grid-cols-3 gap-6 mt-8">
+      <div className="grid md:grid-cols-3 gap-6">
         <Link
           href="/faturamentos"
           className="bg-card p-6 rounded-lg shadow-sm border hover:border-ring transition"
