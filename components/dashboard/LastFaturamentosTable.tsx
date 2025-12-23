@@ -105,8 +105,8 @@ export default function LastFaturamentosTable({ faturamentos }: LastFaturamentos
                     {format(parseISO(fat.data), 'dd/MM/yyyy', { locale: ptBR })}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-foreground">
-                    {fat.exportacao && fat.valor_usd ? (
-                      formatUSD(Number(fat.valor_usd))
+                    {fat.exportacao && fat.valor_nota_fiscal ? (
+                      formatCurrency(Number(fat.valor_nota_fiscal))
                     ) : (
                       formatCurrency(Number(fat.valor_bruto))
                     )}
