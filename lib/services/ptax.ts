@@ -42,13 +42,21 @@ async function fetchPTAXFromAPI(
       const data: PTAXAPIResponse = await response.json()
 
       if (!data.value || data.value.length === 0) {
-        // No data for this date (likely weekend/holiday) - try previous business day
+        const isToday = isSameDay(date, new Date())
+
+        if (isToday) {
+          // Don't fall back for today - rate might not be published yet (available at 13:30)
+          return null
+        }
+
+        // For past dates, try previous business day (weekend/holiday)
         const previousDay = getPreviousBusinessDay(date)
         if (previousDay.getTime() !== date.getTime()) {
           console.log(`No PTAX for ${date.toISOString().split('T')[0]}, trying previous business day`)
           return fetchPTAXFromAPI(previousDay, retries)
         }
-        throw new Error('No PTAX data available')
+
+        return null
       }
 
       const rate = data.value[0].cotacaoVenda
@@ -103,6 +111,17 @@ function formatDateForAPI(date: Date): string {
 }
 
 /**
+ * Checks if two dates are the same day
+ */
+function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  )
+}
+
+/**
  * Fetches PTAX rate from cache or API
  * @param date - Date in YYYY-MM-DD format
  * @returns PTAX rate and metadata
@@ -137,12 +156,18 @@ export async function getPTAXRate(date: string): Promise<{
   const rate = await fetchPTAXFromAPI(dateObj)
 
   if (rate === null) {
+    // Check if it's same-day request
+    const requestedDate = new Date(date + 'T00:00:00')
+    const isToday = isSameDay(requestedDate, new Date())
+
     return {
       rate: null,
       cached: false,
       usedPreviousDay: false,
       actualDate: date,
-      error: 'Erro ao buscar PTAX. Tente novamente em alguns segundos.',
+      error: isToday
+        ? 'PTAX ainda não disponível (publicado às 13:30)'
+        : 'Erro ao buscar PTAX. Tente novamente em alguns segundos.',
     }
   }
 
@@ -173,6 +198,16 @@ export function isPastDate(date: string): boolean {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   return inputDate < today
+}
+
+/**
+ * Validates if date is in the future
+ */
+export function isFutureDate(date: string): boolean {
+  const inputDate = new Date(date + 'T00:00:00')
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return inputDate > today
 }
 
 /**
