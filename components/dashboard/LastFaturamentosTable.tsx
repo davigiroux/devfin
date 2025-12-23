@@ -65,6 +65,9 @@ export default function LastFaturamentosTable({ faturamentos }: LastFaturamentos
                 USD (PTAX)
               </th>
               <th className="px-3 py-2 text-right text-xs font-medium text-foreground uppercase">
+                Valor Real
+              </th>
+              <th className="px-3 py-2 text-right text-xs font-medium text-foreground uppercase">
                 IRPJ
               </th>
               <th className="px-3 py-2 text-right text-xs font-medium text-foreground uppercase">
@@ -101,8 +104,12 @@ export default function LastFaturamentosTable({ faturamentos }: LastFaturamentos
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-foreground">
                     {format(parseISO(fat.data), 'dd/MM/yyyy', { locale: ptBR })}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium text-foreground">
-                    {formatCurrency(amountToBank)}
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-foreground">
+                    {fat.exportacao && fat.valor_usd ? (
+                      formatUSD(Number(fat.valor_usd))
+                    ) : (
+                      formatCurrency(Number(fat.valor_bruto))
+                    )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-muted-foreground">
                     {fat.exportacao && fat.valor_usd && fat.cotacao_ptax ? (
@@ -112,6 +119,9 @@ export default function LastFaturamentosTable({ faturamentos }: LastFaturamentos
                     ) : (
                       '-'
                     )}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium text-foreground">
+                    {formatCurrency(amountToBank)}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-muted-foreground">
                     {formatCurrency(Number(fat.irpj))}
