@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcularImpostosLucroPresumido, calcularSaldoLiquidoExportacao } from '@/lib/calculations/impostos'
-import { calcularValorNotaFiscal, isPastDate } from '@/lib/services/ptax'
+import { calcularValorNotaFiscal, isFutureDate } from '@/lib/services/ptax'
 import { usePTAX } from '@/hooks/usePTAX'
 import { Faturamento } from '@/types'
 import { format } from 'date-fns'
@@ -62,9 +62,9 @@ export default function FaturamentosPage() {
 
     const dataFormatada = format(data, 'yyyy-MM-dd')
 
-    // Validate past date for exports
-    if (!isPastDate(dataFormatada)) {
-      setError('Para exportação de serviços, a data deve ser anterior a hoje (PTAX só disponível após fechamento do dia)')
+    // Validate not future date for exports
+    if (isFutureDate(dataFormatada)) {
+      setError('Não é possível buscar PTAX para datas futuras')
       return
     }
 
@@ -103,9 +103,9 @@ export default function FaturamentosPage() {
 
         // valorRecebido is optional - can be added later
 
-        // Validate past date
-        if (!isPastDate(dataFormatada)) {
-          throw new Error('Para exportação de serviços, a data deve ser anterior a hoje')
+        // Validate not future date
+        if (isFutureDate(dataFormatada)) {
+          throw new Error('Não é possível usar datas futuras para exportação')
         }
 
         // Calculate NF value
@@ -203,7 +203,7 @@ export default function FaturamentosPage() {
           <h2 className="text-xl font-bold mb-4 text-foreground">Cadastrar Faturamento</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-destructive border border-destructive text-destructive px-4 py-3 rounded">
+              <div className="bg-destructive border border-destructive text-destructive-foreground px-4 py-3 rounded">
                 {error}
               </div>
             )}

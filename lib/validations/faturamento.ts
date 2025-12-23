@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { isPastDate } from '@/lib/services/ptax'
+import { isFutureDate } from '@/lib/services/ptax'
 
 export const faturamentoSchema = z
   .object({
@@ -14,14 +14,14 @@ export const faturamentoSchema = z
   })
   .refine(
     (data) => {
-      // For exports, date must be in the past (PTAX only available after business day close)
+      // For exports, date cannot be in the future
       if (data.exportacao) {
-        return isPastDate(data.data)
+        return !isFutureDate(data.data)
       }
       return true
     },
     {
-      message: 'Para exportação de serviços, a data deve ser anterior a hoje (PTAX só disponível após fechamento do dia)',
+      message: 'Não é possível usar datas futuras para exportação',
       path: ['data'],
     }
   )
