@@ -62,10 +62,7 @@ export default function LastFaturamentosTable({ faturamentos }: LastFaturamentos
                 Valor
               </th>
               <th className="px-3 py-2 text-right text-xs font-medium text-foreground uppercase">
-                PTAX
-              </th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-foreground uppercase">
-                Ao Banco
+                USD (PTAX)
               </th>
               <th className="px-3 py-2 text-right text-xs font-medium text-foreground uppercase">
                 IRPJ
@@ -104,22 +101,17 @@ export default function LastFaturamentosTable({ faturamentos }: LastFaturamentos
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-foreground">
                     {format(parseISO(fat.data), 'dd/MM/yyyy', { locale: ptBR })}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-foreground">
-                    {fat.exportacao && fat.valor_usd ? (
-                      <span className="text-xs">
-                        {formatUSD(Number(fat.valor_usd))}
-                      </span>
-                    ) : (
-                      formatCurrency(Number(fat.valor_bruto))
-                    )}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-muted-foreground">
-                    {fat.exportacao && fat.cotacao_ptax
-                      ? Number(fat.cotacao_ptax).toFixed(4)
-                      : '-'}
-                  </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium text-foreground">
                     {formatCurrency(amountToBank)}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-muted-foreground">
+                    {fat.exportacao && fat.valor_usd && fat.cotacao_ptax ? (
+                      <span className="text-xs">
+                        {formatUSD(Number(fat.valor_usd))} (R$ {Number(fat.cotacao_ptax).toFixed(4)})
+                      </span>
+                    ) : (
+                      '-'
+                    )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-right text-muted-foreground">
                     {formatCurrency(Number(fat.irpj))}
