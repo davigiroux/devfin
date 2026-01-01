@@ -8,6 +8,8 @@ import { filtrarDespesasMes } from '@/lib/calculations/caixa'
 import { ALIQUOTAS, calcularSaldoLiquidoExportacao } from '@/lib/calculations/impostos'
 import { CurrencyInput } from '@/components/ui'
 import Link from 'next/link'
+import { useClipboard } from '@/hooks/useClipboard'
+import { generateNFDescription } from '@/lib/services/nf-description'
 
 export default function FaturamentoDetailPage() {
   const params = useParams()
@@ -30,6 +32,9 @@ export default function FaturamentoDetailPage() {
 
   // Despesas toggle state
   const [includeDespesas, setIncludeDespesas] = useState(true)
+
+  // Clipboard hook
+  const { copying, success: copySuccess, error: copyError, copyToClipboard } = useClipboard()
 
   const supabase = createClient()
 
@@ -128,6 +133,16 @@ export default function FaturamentoDetailPage() {
       setError('Erro ao excluir faturamento')
       setDeleting(false)
       setShowDeleteConfirm(false)
+    }
+  }
+
+  const handleCopyNFDescription = async () => {
+    if (!faturamento) return
+    try {
+      const description = generateNFDescription(faturamento)
+      await copyToClipboard(description)
+    } catch (err) {
+      console.error('Erro ao gerar descrição:', err)
     }
   }
 
@@ -240,6 +255,52 @@ export default function FaturamentoDetailPage() {
                 </p>
               </div>
             </>
+          )}
+
+          {isExport && faturamento.valor_usd && faturamento.cotacao_ptax && (
+            <div className="sm:col-span-2 lg:col-span-3 pt-4 border-t border-border/50">
+              <button
+                onClick={handleCopyNFDescription}
+                disabled={copying}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  copySuccess
+                    ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20'
+                    : copyError
+                      ? 'bg-destructive/10 text-destructive border border-destructive/20'
+                      : 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {copying ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Copiando...
+                  </>
+                ) : copySuccess ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Copiado!
+                  </>
+                ) : copyError ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {copyError}
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Descrição para NF
+                  </>
+                )}
+              </button>
+            </div>
           )}
 
           {isExport && (
