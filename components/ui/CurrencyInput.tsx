@@ -68,20 +68,24 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
 
     // Handle controlled value updates
     React.useEffect(() => {
-      if (maskRef.current && "maskRef" in maskRef.current) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const element = maskRef.current as any;
+      if (element?.maskRef) {
         const displayValue = value !== undefined ? value.toString() : "";
-        const currentValue = (maskRef.current as any).maskRef?.unmaskedValue || "";
+        const currentValue = element.maskRef.unmaskedValue || "";
         if (currentValue !== displayValue) {
-          (maskRef.current as any).maskRef.unmaskedValue = displayValue;
+          element.maskRef.unmaskedValue = displayValue;
         }
       }
     }, [value, maskRef]);
 
     // Combine refs
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     React.useImperativeHandle(ref, () => maskRef.current as any);
 
     return (
       <input
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ref={maskRef as any}
         id={id}
         name={name}
