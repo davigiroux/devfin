@@ -102,7 +102,7 @@ export default function DespesasPage() {
     setRecorrente(despesa.recorrente);
     setMesReferencia(despesa.mes_referencia || now.getMonth() + 1);
     setAnoReferencia(despesa.ano_referencia || now.getFullYear());
-    setEffectiveFrom(new Date());
+    setEffectiveFrom(new Date(anoView, mesView - 1, 1));
     setShowForm(true);
   };
 
