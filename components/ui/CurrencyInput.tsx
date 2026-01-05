@@ -39,11 +39,9 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       : "border border-input focus:border-ring";
 
     const onAccept = useCallback(
-      (value: string) => {
-        // Value comes as cents (e.g., "123339" = 1233.39)
-        const numValue = value ? parseFloat(value) / 100 : null;
-        const strValue = numValue !== null ? numValue.toString() : undefined;
-        onValueChange?.(strValue, name, { float: numValue });
+      (unmaskedValue: string) => {
+        const numValue = unmaskedValue ? parseFloat(unmaskedValue) : null;
+        onValueChange?.(unmaskedValue || undefined, name, { float: numValue });
       },
       [name, onValueChange]
     );
@@ -51,30 +49,15 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     const { ref: maskRef } = useIMask(
       {
         mask: `${prefix}num`,
-        lazy: false,
         blocks: {
           num: {
             mask: Number,
-            scale: 2,
             radix: ",",
             thousandsSeparator: ".",
             mapToRadix: ["."],
+            scale: 2,
             padFractionalZeros: true,
             normalizeZeros: true,
-            min: 0,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            format: (num: any) => {
-              // Convert cents to decimal display
-              const cents = Math.round(parseFloat(num) || 0);
-              const decimal = cents / 100;
-              return decimal.toFixed(2).replace(".", ",");
-            },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            parse: (str: any) => {
-              // Convert display back to cents
-              const cleaned = str.replace(/[^\d]/g, "");
-              return cleaned || "0";
-            },
           },
         },
       },
@@ -88,11 +71,10 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const element = maskRef.current as any;
       if (element?.maskRef) {
-        // Convert value (decimal) to cents for the mask
-        const cents = value !== undefined ? Math.round(value * 100).toString() : "0";
-        const currentValue = element.maskRef.unmaskedValue || "0";
-        if (currentValue !== cents) {
-          element.maskRef.unmaskedValue = cents;
+        const displayValue = value !== undefined ? value.toString() : "";
+        const currentValue = element.maskRef.unmaskedValue || "";
+        if (currentValue !== displayValue) {
+          element.maskRef.unmaskedValue = displayValue;
         }
       }
     }, [value, maskRef]);
