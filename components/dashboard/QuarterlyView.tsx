@@ -31,7 +31,6 @@ const MONTHS = [
 
 export default function QuarterlyView({ faturamentos, despesas }: QuarterlyViewProps) {
   const [expandedQuarters, setExpandedQuarters] = useState<Set<string>>(new Set())
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -50,6 +49,9 @@ export default function QuarterlyView({ faturamentos, despesas }: QuarterlyViewP
   if (availableYears.length === 0) {
     availableYears.push(new Date().getFullYear())
   }
+
+  // Initialize selectedYear with the most recent year with data
+  const [selectedYear, setSelectedYear] = useState<number>(availableYears[0])
 
   // Filter faturamentos by selected year
   const yearFaturamentos = faturamentos.filter((f) => {
