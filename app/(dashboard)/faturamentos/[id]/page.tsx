@@ -30,8 +30,8 @@ export default function FaturamentoDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  // Despesas toggle state
-  const [includeDespesas, setIncludeDespesas] = useState(true)
+  // Despesas toggle state - tracks which despesas are included by ID
+  const [excludedDespesas, setExcludedDespesas] = useState<Set<string>>(new Set())
 
   // Clipboard hook
   const { copying, success: copySuccess, error: copyError, copyToClipboard } = useClipboard()
@@ -173,7 +173,21 @@ export default function FaturamentoDetailPage() {
 
   const faturamentoDate = new Date(faturamento.data)
   const mesAno = faturamentoDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-  const totalDespesas = despesasMes.reduce((acc, d) => acc + d.valor, 0)
+  const totalDespesas = despesasMes
+    .filter(d => !excludedDespesas.has(d.id))
+    .reduce((acc, d) => acc + d.valor, 0)
+
+  const toggleDespesa = (despesaId: string) => {
+    setExcludedDespesas(prev => {
+      const next = new Set(prev)
+      if (next.has(despesaId)) {
+        next.delete(despesaId)
+      } else {
+        next.add(despesaId)
+      }
+      return next
+    })
+  }
 
   const saldoLiquidoSemDespesas = hasValorRecebido
     ? calcularSaldoLiquidoExportacao(valorBase, Number(faturamento.valor_recebido))
@@ -182,7 +196,7 @@ export default function FaturamentoDetailPage() {
       : null
 
   const saldoLiquido = saldoLiquidoSemDespesas !== null
-    ? (includeDespesas ? saldoLiquidoSemDespesas - totalDespesas : saldoLiquidoSemDespesas)
+    ? saldoLiquidoSemDespesas - totalDespesas
     : null
 
   return (
@@ -423,24 +437,12 @@ export default function FaturamentoDetailPage() {
         {/* Despesas do Mês */}
         <div className="mt-6 pt-6 border-t border-border/50">
           <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Despesas de {mesAno.replace(/^\w/, c => c.toUpperCase())}
-              </h3>
-              <button
-                onClick={() => setIncludeDespesas(!includeDespesas)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                  includeDespesas
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'bg-muted text-muted-foreground border border-border'
-                }`}
-              >
-                {includeDespesas ? 'Incluídas' : 'Excluídas'}
-              </button>
-            </div>
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Despesas de {mesAno.replace(/^\w/, c => c.toUpperCase())}
+            </h3>
             <Link href="/despesas" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1">
               Ver todas
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,51 +451,76 @@ export default function FaturamentoDetailPage() {
             </Link>
           </div>
 
-          {includeDespesas && (
+          {despesasMes.length > 0 ? (
             <>
-              {despesasMes.length > 0 ? (
-                <>
-                  <div className="space-y-3">
-              {despesasMes.map((despesa) => (
-                <div key={despesa.id} className="flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <div>
-                    <p className="font-semibold text-foreground">{despesa.descricao}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        despesa.tipo === 'imposto'
-                          ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                          : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
-                      }`}>
-                        {despesa.tipo === 'imposto' ? 'Imposto' : 'Compromisso'}
-                      </span>
-                      <p className="text-xs text-muted-foreground">
-                        Venc. dia {despesa.dia_vencimento}
+              <div className="space-y-3">
+                {despesasMes.map((despesa) => {
+                  const isIncluded = !excludedDespesas.has(despesa.id)
+                  return (
+                    <div
+                      key={despesa.id}
+                      className={`flex justify-between items-center py-3 px-4 rounded-lg transition-colors ${
+                        isIncluded
+                          ? 'bg-muted/30 hover:bg-muted/50'
+                          : 'bg-muted/10 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <button
+                          onClick={() => toggleDespesa(despesa.id)}
+                          className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                            isIncluded
+                              ? 'bg-primary border-primary'
+                              : 'bg-transparent border-muted-foreground'
+                          }`}
+                          aria-label={isIncluded ? 'Excluir do cálculo' : 'Incluir no cálculo'}
+                        >
+                          {isIncluded && (
+                            <svg className="w-3 h-3 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                        <div>
+                          <p className={`font-semibold ${isIncluded ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
+                            {despesa.descricao}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              despesa.tipo === 'imposto'
+                                ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                                : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                            }`}>
+                              {despesa.tipo === 'imposto' ? 'Imposto' : 'Compromisso'}
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Venc. dia {despesa.dia_vencimento}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <p className={`font-bold ${isIncluded ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(despesa.valor)}
                       </p>
                     </div>
-                  </div>
-                  <p className="font-bold text-foreground">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(despesa.valor)}
-                  </p>
-                </div>
-              ))}
+                  )
+                })}
+              </div>
+              <div className="mt-6 pt-6 border-t border-border/50 flex justify-between items-center py-3 px-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                <p className="font-bold text-foreground">Total Despesas</p>
+                <p className="font-bold text-xl text-destructive">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalDespesas)}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <svg className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-muted-foreground text-sm">Nenhuma despesa cadastrada para este mês.</p>
             </div>
-            <div className="mt-6 pt-6 border-t border-border/50 flex justify-between items-center py-3 px-4 rounded-lg bg-destructive/10 border border-destructive/20">
-              <p className="font-bold text-foreground">Total Despesas</p>
-              <p className="font-bold text-xl text-destructive">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalDespesas)}
-              </p>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-8">
-            <svg className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="text-muted-foreground text-sm">Nenhuma despesa cadastrada para este mês.</p>
-          </div>
-        )}
-              </>
-            )}
+          )}
         </div>
 
         {/* Saldo Líquido */}
@@ -504,8 +531,8 @@ export default function FaturamentoDetailPage() {
                 <p className="font-bold text-lg text-foreground">Saldo Líquido</p>
                 <p className="text-xs text-muted-foreground">
                   {isExport
-                    ? `Valor recebido - impostos${includeDespesas ? ' - despesas' : ''}`
-                    : `Valor bruto - impostos${includeDespesas ? ' - despesas' : ''}`}
+                    ? 'Valor recebido - impostos - despesas'
+                    : 'Valor bruto - impostos - despesas'}
                 </p>
               </div>
               <p className={`font-bold text-2xl ${saldoLiquido >= 0 ? 'text-success' : 'text-destructive'}`}>
