@@ -39,7 +39,9 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       : "border border-input focus:border-ring";
 
     const onAccept = useCallback(
-      (unmaskedValue: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (value: string, maskInstance: any) => {
+        const unmaskedValue = maskInstance?.unmaskedValue || "";
         const numValue = unmaskedValue ? parseFloat(unmaskedValue) : null;
         onValueChange?.(unmaskedValue || undefined, name, { float: numValue });
       },
