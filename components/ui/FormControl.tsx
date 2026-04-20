@@ -20,15 +20,15 @@ const FormControl: React.FC<FormControlProps> = ({
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-foreground mb-1"
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-destructive ml-1">*</span>}
         </label>
       )}
       {children}
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-destructive">{error}</p>
       )}
     </div>
   )

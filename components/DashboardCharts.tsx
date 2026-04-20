@@ -63,14 +63,14 @@ const hslToHex = (hslString: string): string => {
 const useChartColors = () => {
   if (typeof window === "undefined") {
     return {
-      irpj: "#8b5cf6",
-      csll: "#ec4899",
-      pis: "#3b82f6",
-      cofins: "#10b981",
-      imposto: "#ef4444",
-      compromisso: "#f59e0b",
-      revenue: "#22c55e",
-      expenses: "#ef4444",
+      irpj: "#0F766E",
+      csll: "#D97706",
+      pis: "#1D4ED8",
+      cofins: "#15803D",
+      imposto: "#B91C1C",
+      compromisso: "#D97706",
+      revenue: "#15803D",
+      expenses: "#B91C1C",
     };
   }
 
@@ -78,15 +78,15 @@ const useChartColors = () => {
   const style = getComputedStyle(root);
 
   return {
-    irpj: hslToHex(style.getPropertyValue("--chart-irpj")) || "#8b5cf6",
-    csll: hslToHex(style.getPropertyValue("--chart-csll")) || "#ec4899",
-    pis: hslToHex(style.getPropertyValue("--chart-pis")) || "#3b82f6",
-    cofins: hslToHex(style.getPropertyValue("--chart-cofins")) || "#10b981",
-    imposto: hslToHex(style.getPropertyValue("--chart-imposto")) || "#ef4444",
+    irpj: hslToHex(style.getPropertyValue("--chart-irpj")) || "#0F766E",
+    csll: hslToHex(style.getPropertyValue("--chart-csll")) || "#D97706",
+    pis: hslToHex(style.getPropertyValue("--chart-pis")) || "#1D4ED8",
+    cofins: hslToHex(style.getPropertyValue("--chart-cofins")) || "#15803D",
+    imposto: hslToHex(style.getPropertyValue("--chart-imposto")) || "#B91C1C",
     compromisso:
-      hslToHex(style.getPropertyValue("--chart-compromisso")) || "#f59e0b",
-    revenue: hslToHex(style.getPropertyValue("--chart-revenue")) || "#22c55e",
-    expenses: hslToHex(style.getPropertyValue("--chart-expenses")) || "#ef4444",
+      hslToHex(style.getPropertyValue("--chart-compromisso")) || "#D97706",
+    revenue: hslToHex(style.getPropertyValue("--chart-revenue")) || "#15803D",
+    expenses: hslToHex(style.getPropertyValue("--chart-expenses")) || "#B91C1C",
   };
 };
 

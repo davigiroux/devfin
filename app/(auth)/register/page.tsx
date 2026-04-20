@@ -63,7 +63,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-blue-100 dark:from-background dark:to-background">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 dark:from-background dark:to-background">
       <div className="max-w-md w-full space-y-8 p-8 bg-card rounded-lg shadow-md dark:shadow-none dark:border dark:border-border">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
@@ -75,7 +75,7 @@ export default function RegisterPage() {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded">
+            <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 rounded">
               {error}
             </div>
           )}

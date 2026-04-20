@@ -93,58 +93,58 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Histórico da Despesa</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-border">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-2xl font-bold text-foreground">Histórico da Despesa</h2>
         </div>
 
         <div className="overflow-y-auto flex-1 p-6">
           {loading ? (
-            <div className="text-center py-8 text-gray-600">Carregando...</div>
+            <div className="text-center py-8 text-muted-foreground">Carregando...</div>
           ) : (
             <div className="space-y-8">
               {/* Versions */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Versões</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">Versões</h3>
                 <div className="space-y-3">
                   {versions.map((version) => (
                     <div
                       key={version.id}
                       className={`p-4 rounded-lg border ${
                         version.ativa
-                          ? 'border-green-300 bg-green-50'
-                          : 'border-gray-300 bg-gray-50'
+                          ? 'border-success/40 bg-success/10'
+                          : 'border-border bg-muted'
                       }`}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <div className="font-semibold text-gray-900">
+                          <div className="font-semibold text-foreground">
                             {version.descricao}
                             {version.ativa && (
-                              <span className="ml-2 text-xs bg-green-600 text-white px-2 py-1 rounded">
+                              <span className="ml-2 text-xs bg-success text-success-foreground px-2 py-1 rounded">
                                 Atual
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
+                          <div className="text-sm text-muted-foreground mt-1">
                             Versão {version.version} • Efetivo desde{' '}
                             {format(new Date(version.effective_from), 'dd/MM/yyyy', { locale: ptBR })}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-900">
+                          <div className="font-semibold text-foreground">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(version.valor)}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             {version.tipo === 'imposto' ? 'Imposto' : 'Compromisso'}
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         Vencimento: Dia {version.dia_vencimento} •{' '}
                         {version.recorrente ? (
-                          <span className="text-green-600">Recorrente</span>
+                          <span className="text-success">Recorrente</span>
                         ) : (
                           <span>
                             {version.mes_referencia}/{version.ano_referencia}
@@ -158,41 +158,41 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
 
               {/* Payments */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Histórico de Pagamentos</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">Histórico de Pagamentos</h3>
                 {pagamentos.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-border border border-border rounded-lg">
+                      <thead className="bg-muted">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                             Mês/Ano
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                             Versão
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                             Valor Pago
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                             Status
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-foreground uppercase tracking-wider">
                             Data Pagamento
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-card divide-y divide-border">
                         {pagamentos.map((pagamento) => {
                           const version = getVersionForPagamento(pagamento)
                           return (
                             <tr key={pagamento.id}>
-                              <td className="px-4 py-3 text-sm text-gray-900">
+                              <td className="px-4 py-3 text-sm text-foreground">
                                 {pagamento.mes_referencia}/{pagamento.ano_referencia}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
                                 v{version?.version || '?'}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-900">
+                              <td className="px-4 py-3 text-sm text-foreground">
                                 {pagamento.valor_pago
                                   ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pagamento.valor_pago)
                                   : '-'}
@@ -201,14 +201,14 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
                                 <span
                                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                     pagamento.pago
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-gray-100 text-gray-800'
+                                      ? 'bg-success/15 text-success'
+                                      : 'bg-muted text-muted-foreground'
                                   }`}
                                 >
                                   {pagamento.pago ? 'Pago' : 'Pendente'}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
                                 {pagamento.data_pagamento
                                   ? format(new Date(pagamento.data_pagamento), 'dd/MM/yyyy', { locale: ptBR })
                                   : '-'}
@@ -220,7 +220,7 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="text-center py-8 text-muted-foreground bg-muted rounded-lg border border-border">
                     Nenhum pagamento registrado
                   </div>
                 )}
@@ -229,10 +229,10 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+        <div className="px-6 py-4 border-t border-border flex justify-end">
           <button
             onClick={onClose}
-            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 transition"
+            className="bg-muted text-foreground px-6 py-2 rounded-md hover:bg-muted/70 transition"
           >
             Fechar
           </button>
