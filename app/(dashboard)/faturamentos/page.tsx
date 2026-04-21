@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { calcularImpostosLucroPresumido, calcularSaldoLiquidoExportacao } from '@/lib/calculations/impostos'
 import { calcularValorNotaFiscal, isFutureDate } from '@/lib/services/ptax'
 import { usePTAX } from '@/hooks/usePTAX'
@@ -9,6 +8,7 @@ import { Faturamento } from '@/types'
 import { format } from 'date-fns'
 import { DateInput, CurrencyInput, NumberInput, Checkbox } from '@/components/ui'
 import Link from 'next/link'
+import { createFaturamento, listFaturamentos, type CreateFaturamentoInput } from './actions'
 
 export default function FaturamentosPage() {
   const [faturamentos, setFaturamentos] = useState<Faturamento[]>([])
@@ -26,8 +26,6 @@ export default function FaturamentosPage() {
   const [manualPTAX, setManualPTAX] = useState<number | undefined>(undefined)
   const { rate: ptaxRate, loading: ptaxLoading, error: ptaxError, fetchPTAX } = usePTAX()
 
-  const supabase = createClient()
-
   useEffect(() => {
     loadFaturamentos()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -35,18 +33,8 @@ export default function FaturamentosPage() {
 
   const loadFaturamentos = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data: faturamentosData, error } = await supabase
-        .from('faturamentos')
-        .select('*')
-        .eq('usuario_id', user.id)
-        .order('data', { ascending: false })
-
-      if (error) throw error
-
-      setFaturamentos(faturamentosData || [])
+      const rows = await listFaturamentos()
+      setFaturamentos(rows as Faturamento[])
     } catch (err) {
       console.error('Erro ao carregar faturamentos:', err)
     } finally {
@@ -78,17 +66,13 @@ export default function FaturamentosPage() {
     setSubmitting(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Usuário não autenticado')
-
       if (!data) {
         throw new Error('Data é obrigatória')
       }
 
       const dataFormatada = format(data, 'yyyy-MM-dd')
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let insertData: any
+      let insertData: CreateFaturamentoInput
 
       if (exportacao) {
         // Validate export-specific fields
@@ -116,21 +100,19 @@ export default function FaturamentosPage() {
 
         insertData = {
           data: dataFormatada,
-          valor_bruto: valorNotaFiscal, // For backward compatibility
+          valor_bruto: valorNotaFiscal,
           valor_usd: valorUSD,
           cotacao_ptax: cotacao,
           valor_nota_fiscal: valorNotaFiscal,
-          valor_recebido: valorRecebido || null, // Optional - can be added later
+          valor_recebido: valorRecebido ?? null,
           irpj: impostos.irpj,
           csll: impostos.csll,
           pis: impostos.pis,
           cofins: impostos.cofins,
           total_impostos: impostos.total,
           exportacao: true,
-          usuario_id: user.id,
         }
       } else {
-        // Normal faturamento
         if (!valorBruto || valorBruto <= 0) {
           throw new Error('Valor bruto é obrigatório')
         }
@@ -146,16 +128,10 @@ export default function FaturamentosPage() {
           cofins: impostos.cofins,
           total_impostos: impostos.total,
           exportacao: false,
-          usuario_id: user.id,
         }
       }
 
-      // Insert into database
-      const { error: insertError } = await supabase
-        .from('faturamentos')
-        .insert(insertData)
-
-      if (insertError) throw insertError
+      await createFaturamento(insertData)
 
       // Reset form
       setData(null)

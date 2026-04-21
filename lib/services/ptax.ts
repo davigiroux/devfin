@@ -1,5 +1,3 @@
-import { createClient } from '@/lib/supabase/client'
-
 interface PTAXAPIResponse {
   value: Array<{
     cotacaoCompra: number
@@ -122,72 +120,15 @@ function isSameDay(date1: Date, date2: Date): boolean {
 }
 
 /**
- * Fetches PTAX rate from cache or API
- * @param date - Date in YYYY-MM-DD format
- * @returns PTAX rate and metadata
+ * Internal: fetch PTAX from the external API (no cache).
+ * Exported for the server action in `ptax.actions.ts`.
  */
-export async function getPTAXRate(date: string): Promise<{
-  rate: number | null
-  cached: boolean
-  usedPreviousDay: boolean
-  actualDate: string
-  error?: string
-}> {
-  const supabase = createClient()
-  const dateObj = new Date(date + 'T00:00:00')
+export async function _fetchPTAXFromAPI(dateObj: Date): Promise<number | null> {
+  return fetchPTAXFromAPI(dateObj)
+}
 
-  // Check cache first
-  const { data: cachedRate } = await supabase
-    .from('ptax_rates')
-    .select('*')
-    .eq('date', date)
-    .single()
-
-  if (cachedRate) {
-    return {
-      rate: cachedRate.rate_venda,
-      cached: true,
-      usedPreviousDay: false,
-      actualDate: date,
-    }
-  }
-
-  // Fetch from API
-  const rate = await fetchPTAXFromAPI(dateObj)
-
-  if (rate === null) {
-    // Check if it's same-day request
-    const requestedDate = new Date(date + 'T00:00:00')
-    const isToday = isSameDay(requestedDate, new Date())
-
-    return {
-      rate: null,
-      cached: false,
-      usedPreviousDay: false,
-      actualDate: date,
-      error: isToday
-        ? 'PTAX ainda não disponível (publicado às 13:30)'
-        : 'Erro ao buscar PTAX. Tente novamente em alguns segundos.',
-    }
-  }
-
-  // Cache the rate
-  try {
-    await supabase.from('ptax_rates').insert({
-      date,
-      rate_venda: rate,
-    })
-  } catch (error) {
-    console.error('Failed to cache PTAX rate:', error)
-    // Continue anyway - we have the rate
-  }
-
-  return {
-    rate,
-    cached: false,
-    usedPreviousDay: false,
-    actualDate: date,
-  }
+export function _isSameDay(a: Date, b: Date): boolean {
+  return isSameDay(a, b)
 }
 
 /**

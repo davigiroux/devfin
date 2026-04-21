@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getPTAXRate } from '@/lib/services/ptax'
+import { getPTAXRate } from '@/lib/services/ptax.actions'
 
 interface UsePTAXReturn {
   rate: number | null

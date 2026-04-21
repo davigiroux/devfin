@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { calcularINSSSocios, calcularProlaboreMinimo } from '@/lib/calculations/inss'
 import { Socio } from '@/types'
 import { Input, CurrencyInput } from '@/components/ui'
+import { createSocio, listSocios } from './actions'
 
 export default function SociosPage() {
   const [socios, setSocios] = useState<Socio[]>([])
@@ -18,8 +18,6 @@ export default function SociosPage() {
   const [valorProlabore, setValorProlabore] = useState<number | undefined>()
   const [showCalculoINSS, setShowCalculoINSS] = useState(false)
 
-  const supabase = createClient()
-
   useEffect(() => {
     loadSocios()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -27,14 +25,8 @@ export default function SociosPage() {
 
   const loadSocios = async () => {
     try {
-      const { data: sociosData, error } = await supabase
-        .from('socios')
-        .select('*')
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-
-      setSocios(sociosData || [])
+      const rows = await listSocios()
+      setSocios(rows as Socio[])
     } catch (err) {
       console.error('Erro ao carregar sócios:', err)
     } finally {
@@ -71,17 +63,12 @@ export default function SociosPage() {
         throw new Error(`A soma dos percentuais ultrapassaria 100%. Disponível: ${100 - somaAtual}%`)
       }
 
-      const { error: insertError } = await supabase
-        .from('socios')
-        .insert({
-          nome,
-          cpf,
-          percentual_participacao: percentualNum,
-        })
+      await createSocio({
+        nome,
+        cpf,
+        percentual_participacao: percentualNum,
+      })
 
-      if (insertError) throw insertError
-
-      // Resetar formulário
       setNome('')
       setCpf('')
       setPercentual('')

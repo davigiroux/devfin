@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Faturamento, DespesaMensal } from '@/types'
 import { filtrarDespesasMes } from '@/lib/calculations/caixa'
 import { ALIQUOTAS, calcularSaldoLiquidoExportacao } from '@/lib/calculations/impostos'
@@ -10,6 +9,12 @@ import { CurrencyInput } from '@/components/ui'
 import Link from 'next/link'
 import { useClipboard } from '@/hooks/useClipboard'
 import { generateNFDescription } from '@/lib/services/nf-description'
+import {
+  deleteFaturamento,
+  getDespesasAtivasForUser,
+  getFaturamento,
+  updateFaturamentoRecebido,
+} from '../actions'
 
 export default function FaturamentoDetailPage() {
   const params = useParams()
@@ -36,8 +41,6 @@ export default function FaturamentoDetailPage() {
   // Clipboard hook
   const { copying, success: copySuccess, error: copyError, copyToClipboard } = useClipboard()
 
-  const supabase = createClient()
-
   useEffect(() => {
     loadFaturamento()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,44 +48,23 @@ export default function FaturamentoDetailPage() {
 
   const loadFaturamento = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      // Load faturamento
-      const { data: faturamentoData, error: faturamentoError } = await supabase
-        .from('faturamentos')
-        .select('*')
-        .eq('id', id)
-        .eq('usuario_id', user.id)
-        .single()
-
-      if (faturamentoError) throw faturamentoError
+      const faturamentoData = await getFaturamento(id)
       if (!faturamentoData) {
         router.push('/faturamentos')
         return
       }
 
-      setFaturamento(faturamentoData)
-      setValorRecebido(faturamentoData.valor_recebido != null ? faturamentoData.valor_recebido : undefined)
+      setFaturamento(faturamentoData as Faturamento)
+      setValorRecebido(
+        faturamentoData.valor_recebido != null ? faturamentoData.valor_recebido : undefined,
+      )
 
-      // Load despesas for the same month
       const faturamentoDate = new Date(faturamentoData.data)
       const mes = faturamentoDate.getMonth() + 1
       const ano = faturamentoDate.getFullYear()
 
-      const { data: despesasData } = await supabase
-        .from('despesas_mensais')
-        .select('*')
-        .eq('usuario_id', user.id)
-        .eq('ativa', true)
-
-      if (despesasData) {
-        const despesasFiltradas = filtrarDespesasMes(despesasData, mes, ano)
-        setDespesasMes(despesasFiltradas)
-      }
+      const despesasData = await getDespesasAtivasForUser()
+      setDespesasMes(filtrarDespesasMes(despesasData as DespesaMensal[], mes, ano))
     } catch (err) {
       console.error('Erro ao carregar faturamento:', err)
       setError('Erro ao carregar faturamento')
@@ -98,13 +80,7 @@ export default function FaturamentoDetailPage() {
     setError('')
 
     try {
-      const { error: updateError } = await supabase
-        .from('faturamentos')
-        .update({ valor_recebido: valorRecebido || null })
-        .eq('id', faturamento.id)
-
-      if (updateError) throw updateError
-
+      await updateFaturamentoRecebido(faturamento.id, valorRecebido ?? 0)
       setFaturamento({ ...faturamento, valor_recebido: valorRecebido ?? null })
       setIsEditing(false)
     } catch {
@@ -121,13 +97,7 @@ export default function FaturamentoDetailPage() {
     setError('')
 
     try {
-      const { error: deleteError } = await supabase
-        .from('faturamentos')
-        .delete()
-        .eq('id', faturamento.id)
-
-      if (deleteError) throw deleteError
-
+      await deleteFaturamento(faturamento.id)
       router.push('/faturamentos')
     } catch {
       setError('Erro ao excluir faturamento')
