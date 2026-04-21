@@ -3,95 +3,97 @@
 @tailwind utilities;
 
 :root {
-  /* Backgrounds */
-  --background: 0 0% 98%;           /* gray-50 */
-  --foreground: 222 47% 11%;         /* gray-900 */
+  /* Backgrounds — warm stone on bone */
+  --background: 36 44% 96%;          /* #FAF7F2 bone */
+  --foreground: 24 10% 10%;          /* #1C1917 stone-900 */
   --card: 0 0% 100%;                 /* white */
-  --card-foreground: 222 47% 11%;    /* gray-900 */
-  --popover: 0 0% 100%;              /* white */
-  --popover-foreground: 222 47% 11%; /* gray-900 */
-  --muted: 220 13% 91%;              /* gray-100 */
-  --muted-foreground: 215 14% 34%;   /* gray-600 */
+  --card-foreground: 24 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 10% 10%;
+  --muted: 39 32% 89%;               /* #EDE7DA sand */
+  --muted-foreground: 33 5% 32%;     /* #57534E stone-600 */
 
   /* UI Elements */
-  --border: 220 13% 91%;             /* gray-200 */
-  --input: 214 32% 91%;              /* gray-300 */
-  --ring: 239 84% 67%;               /* indigo-500 */
+  --border: 40 30% 86%;              /* #E6DFD2 */
+  --input: 40 30% 86%;
+  --ring: 173 78% 26%;               /* #0F766E teal-700 */
 
-  /* Primary (Indigo) */
-  --primary: 239 84% 67%;            /* indigo-600 */
-  --primary-foreground: 0 0% 100%;   /* white */
+  /* Primary (Teal) */
+  --primary: 173 78% 26%;            /* #0F766E teal-700 */
+  --primary-foreground: 0 0% 100%;
 
   /* Secondary */
-  --secondary: 220 13% 91%;          /* gray-200 */
-  --secondary-foreground: 222 47% 11%; /* gray-900 */
+  --secondary: 39 32% 89%;
+  --secondary-foreground: 24 10% 10%;
 
-  /* Semantic Colors */
-  --destructive: 0 84% 60%;          /* red-600 */
-  --destructive-foreground: 0 0% 100%; /* white */
-  --success: 142 71% 45%;            /* green-600 */
-  --success-foreground: 0 0% 100%;   /* white */
-  --warning: 38 92% 50%;             /* orange-500 */
-  --warning-foreground: 0 0% 100%;   /* white */
+  /* Accent (Amber) — CTAs, money-out */
+  --accent: 26 94% 44%;              /* #D97706 amber-600 */
+  --accent-foreground: 0 0% 100%;
+
+  /* Semantic */
+  --destructive: 0 74% 42%;          /* #B91C1C red-700 */
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 72% 29%;            /* #15803D green-700 */
+  --success-foreground: 0 0% 100%;
+  --warning: 26 94% 44%;             /* #D97706 amber-600 */
+  --warning-foreground: 0 0% 100%;
 
   /* Chart Colors */
-  --chart-irpj: 258 90% 66%;         /* purple-500 #8b5cf6 */
-  --chart-csll: 330 81% 60%;         /* pink-500 #ec4899 */
-  --chart-pis: 217 91% 60%;          /* blue-500 #3b82f6 */
-  --chart-cofins: 142 76% 36%;       /* green-600 #10b981 */
-  --chart-imposto: 0 84% 60%;        /* red-500 #ef4444 */
-  --chart-compromisso: 38 92% 50%;   /* orange-500 #f59e0b */
-  --chart-revenue: 142 71% 45%;      /* green-500 #22c55e */
-  --chart-expenses: 0 84% 60%;       /* red-500 #ef4444 */
+  --chart-irpj: 173 78% 26%;         /* teal-700 */
+  --chart-csll: 26 94% 44%;          /* amber-600 */
+  --chart-pis: 224 76% 48%;          /* #1D4ED8 blue-700 */
+  --chart-cofins: 142 72% 29%;       /* #15803D green-700 */
+  --chart-imposto: 0 74% 42%;        /* #B91C1C red-700 */
+  --chart-compromisso: 26 94% 44%;   /* amber-600 */
+  --chart-revenue: 142 72% 29%;      /* green-700 */
+  --chart-expenses: 0 74% 42%;       /* red-700 */
 }
 
 .dark {
-  /* Backgrounds */
-  --background: 222 47% 11%;         /* dark gray */
-  --foreground: 210 40% 98%;         /* light gray */
-  --card: 217 33% 17%;               /* dark card */
-  --card-foreground: 210 40% 98%;    /* light gray */
-  --popover: 217 33% 17%;            /* dark popover */
-  --popover-foreground: 210 40% 98%; /* light gray */
-  --muted: 217 33% 22%;              /* muted dark */
-  --muted-foreground: 215 20% 65%;   /* muted text */
+  --background: 24 10% 10%;          /* #1C1917 stone-900 */
+  --foreground: 36 44% 96%;
+  --card: 30 7% 15%;                 /* #292524 stone-800 */
+  --card-foreground: 36 44% 96%;
+  --popover: 30 7% 15%;
+  --popover-foreground: 36 44% 96%;
+  --muted: 27 8% 23%;                /* #3F3A36 */
+  --muted-foreground: 30 6% 64%;     /* #A8A29E stone-400 */
 
-  /* UI Elements */
-  --border: 210 16% 20%;             /* #2a323a */
-  --input: 217 33% 27%;              /* dark input */
-  --ring: 239 84% 67%;               /* indigo-400 */
+  --border: 27 8% 23%;
+  --input: 27 8% 27%;                /* #44403C */
+  --ring: 173 66% 50%;               /* #2DD4BF teal-400 */
 
-  /* Primary (Indigo) */
-  --primary: 239 84% 67%;            /* indigo-500 */
-  --primary-foreground: 222 47% 11%; /* dark text */
+  --primary: 173 66% 50%;
+  --primary-foreground: 24 10% 10%;
 
-  /* Secondary */
-  --secondary: 217 33% 22%;          /* dark secondary */
-  --secondary-foreground: 210 40% 98%; /* light text */
+  --secondary: 27 8% 23%;
+  --secondary-foreground: 36 44% 96%;
 
-  /* Semantic Colors */
-  --destructive: 0 62% 30%;          /* dark red */
-  --destructive-foreground: 210 40% 98%; /* light text */
-  --success: 142 71% 45%;            /* green-600 */
-  --success-foreground: 210 40% 98%; /* light text */
-  --warning: 38 92% 50%;             /* orange-500 */
-  --warning-foreground: 222 47% 11%; /* dark text */
+  --accent: 38 92% 50%;              /* #F59E0B amber-500 */
+  --accent-foreground: 24 10% 10%;
 
-  /* Chart Colors (adjusted for dark mode) */
-  --chart-irpj: 258 90% 66%;         /* purple-400 */
-  --chart-csll: 330 81% 60%;         /* pink-400 */
-  --chart-pis: 217 91% 60%;          /* blue-400 */
-  --chart-cofins: 142 76% 45%;       /* green-500 */
-  --chart-imposto: 0 84% 60%;        /* red-400 */
-  --chart-compromisso: 38 92% 50%;   /* orange-400 */
-  --chart-revenue: 142 71% 50%;      /* green-400 */
-  --chart-expenses: 0 84% 60%;       /* red-400 */
+  --destructive: 0 91% 71%;          /* #F87171 */
+  --destructive-foreground: 36 44% 96%;
+  --success: 142 71% 45%;
+  --success-foreground: 24 10% 10%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 24 10% 10%;
+
+  /* Chart Colors (brighter for contrast on dark) */
+  --chart-irpj: 173 66% 50%;
+  --chart-csll: 38 92% 50%;
+  --chart-pis: 217 91% 60%;
+  --chart-cofins: 142 71% 45%;
+  --chart-imposto: 0 91% 71%;
+  --chart-compromisso: 38 92% 50%;
+  --chart-revenue: 142 71% 45%;
+  --chart-expenses: 0 91% 71%;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 
 @layer utilities {

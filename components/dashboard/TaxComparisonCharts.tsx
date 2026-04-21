@@ -58,12 +58,12 @@ const hslToHex = (hslString: string): string => {
 const useChartColors = () => {
   if (typeof window === 'undefined') {
     return {
-      irpj: '#8b5cf6',
-      csll: '#ec4899',
-      pis: '#3b82f6',
-      cofins: '#10b981',
-      revenue: '#22c55e',
-      net: '#f59e0b',
+      irpj: '#0F766E',
+      csll: '#D97706',
+      pis: '#1D4ED8',
+      cofins: '#15803D',
+      revenue: '#15803D',
+      net: '#D97706',
     }
   }
 
@@ -71,12 +71,12 @@ const useChartColors = () => {
   const style = getComputedStyle(root)
 
   return {
-    irpj: hslToHex(style.getPropertyValue('--chart-irpj')) || '#8b5cf6',
-    csll: hslToHex(style.getPropertyValue('--chart-csll')) || '#ec4899',
-    pis: hslToHex(style.getPropertyValue('--chart-pis')) || '#3b82f6',
-    cofins: hslToHex(style.getPropertyValue('--chart-cofins')) || '#10b981',
-    revenue: hslToHex(style.getPropertyValue('--chart-revenue')) || '#22c55e',
-    net: '#f59e0b',
+    irpj: hslToHex(style.getPropertyValue('--chart-irpj')) || '#0F766E',
+    csll: hslToHex(style.getPropertyValue('--chart-csll')) || '#D97706',
+    pis: hslToHex(style.getPropertyValue('--chart-pis')) || '#1D4ED8',
+    cofins: hslToHex(style.getPropertyValue('--chart-cofins')) || '#15803D',
+    revenue: hslToHex(style.getPropertyValue('--chart-revenue')) || '#15803D',
+    net: hslToHex(style.getPropertyValue('--accent')) || '#D97706',
   }
 }
 
