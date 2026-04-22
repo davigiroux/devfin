@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { DespesaMensal, PagamentoDespesa } from "@/types";
 import { calcularCaixaNecessario } from "@/lib/calculations/caixa";
 import {
@@ -13,6 +12,15 @@ import {
 } from "@/components/ui";
 import { format } from "date-fns";
 import ExpenseHistoryModal from "@/components/ExpenseHistoryModal";
+import {
+  createDespesa,
+  createDespesaNewVersion,
+  listDespesas,
+  listPagamentosForMonth,
+  toggleDespesaAtiva as toggleDespesaAtivaAction,
+  upsertPagamento,
+  type DespesaInput,
+} from "./actions";
 
 export default function DespesasPage() {
   const [despesas, setDespesas] = useState<DespesaMensal[]>([]);
@@ -45,8 +53,6 @@ export default function DespesasPage() {
     new Date(now.getFullYear(), now.getMonth(), 1)
   );
 
-  const supabase = createClient();
-
   useEffect(() => {
     loadDespesas();
     loadPagamentos();
@@ -55,21 +61,8 @@ export default function DespesasPage() {
 
   const loadDespesas = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: despesasData, error } = await supabase
-        .from("despesas_mensais")
-        .select("*")
-        .eq("usuario_id", user.id)
-        .order("tipo", { ascending: true })
-        .order("descricao", { ascending: true });
-
-      if (error) throw error;
-
-      setDespesas(despesasData || []);
+      const rows = await listDespesas();
+      setDespesas(rows as DespesaMensal[]);
     } catch (err) {
       console.error("Erro ao carregar despesas:", err);
     } finally {
@@ -79,15 +72,8 @@ export default function DespesasPage() {
 
   const loadPagamentos = async () => {
     try {
-      const { data: pagamentosData, error } = await supabase
-        .from("pagamentos_despesas")
-        .select("*")
-        .eq("mes_referencia", mesView)
-        .eq("ano_referencia", anoView);
-
-      if (error) throw error;
-
-      setPagamentos(pagamentosData || []);
+      const rows = await listPagamentosForMonth(mesView, anoView);
+      setPagamentos(rows as PagamentoDespesa[]);
     } catch (err) {
       console.error("Erro ao carregar pagamentos:", err);
     }
@@ -124,11 +110,6 @@ export default function DespesasPage() {
     setSubmitting(true);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
       if (!descricao.trim()) {
         throw new Error("Descrição é obrigatória");
       }
@@ -151,55 +132,28 @@ export default function DespesasPage() {
         throw new Error("Data efetiva é obrigatória");
       }
 
+      const input: DespesaInput = {
+        descricao,
+        tipo,
+        valor,
+        dia_vencimento: diaVencimento,
+        recorrente,
+        mes_referencia: recorrente ? null : mesReferencia,
+        ano_referencia: recorrente ? null : anoReferencia,
+        effective_from: format(effectiveFrom, "yyyy-MM-dd"),
+      };
+
       if (editingDespesa) {
-        // Editing: deactivate old version and create new version
-        const { error: deactivateError } = await supabase
-          .from("despesas_mensais")
-          .update({ ativa: false })
-          .eq("id", editingDespesa.id);
-
-        if (deactivateError) throw deactivateError;
-
-        const { error: insertError } = await supabase
-          .from("despesas_mensais")
-          .insert({
-            descricao,
-            tipo,
-            valor,
-            dia_vencimento: diaVencimento,
-            recorrente,
-            mes_referencia: recorrente ? null : mesReferencia,
-            ano_referencia: recorrente ? null : anoReferencia,
-            effective_from: format(effectiveFrom, "yyyy-MM-dd"),
-            version: editingDespesa.version + 1,
-            previous_version_id: editingDespesa.id,
-            usuario_id: user.id,
-          });
-
-        if (insertError) throw insertError;
+        await createDespesaNewVersion(
+          editingDespesa.id,
+          editingDespesa.version,
+          input,
+        );
       } else {
-        // Creating new expense
-        const { error: insertError } = await supabase
-          .from("despesas_mensais")
-          .insert({
-            descricao,
-            tipo,
-            valor,
-            dia_vencimento: diaVencimento,
-            recorrente,
-            mes_referencia: recorrente ? null : mesReferencia,
-            ano_referencia: recorrente ? null : anoReferencia,
-            effective_from: format(effectiveFrom, "yyyy-MM-dd"),
-            usuario_id: user.id,
-          });
-
-        if (insertError) throw insertError;
+        await createDespesa(input);
       }
 
-      // Reset form
       cancelEdit();
-
-      // Reload list
       loadDespesas();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar despesa");
@@ -210,13 +164,7 @@ export default function DespesasPage() {
 
   const toggleDespesaAtiva = async (despesa: DespesaMensal) => {
     try {
-      const { error } = await supabase
-        .from("despesas_mensais")
-        .update({ ativa: !despesa.ativa })
-        .eq("id", despesa.id);
-
-      if (error) throw error;
-
+      await toggleDespesaAtivaAction(despesa.id, !despesa.ativa);
       loadDespesas();
     } catch (err) {
       console.error("Erro ao atualizar despesa:", err);
@@ -231,43 +179,14 @@ export default function DespesasPage() {
           p.mes_referencia === mesView &&
           p.ano_referencia === anoView
       );
-
-      if (pagamentoExistente) {
-        const updateData: {
-          pago: boolean;
-          data_pagamento: string | null;
-          valor_pago?: number;
-        } = {
-          pago: !pagamentoExistente.pago,
-          data_pagamento: !pagamentoExistente.pago
-            ? new Date().toISOString().split("T")[0]
-            : null,
-        };
-
-        // Snapshot valor when marking as paid
-        if (!pagamentoExistente.pago) {
-          updateData.valor_pago = despesa.valor;
-        }
-
-        const { error } = await supabase
-          .from("pagamentos_despesas")
-          .update(updateData)
-          .eq("id", pagamentoExistente.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("pagamentos_despesas").insert({
-          despesa_id: despesa.id,
-          mes_referencia: mesView,
-          ano_referencia: anoView,
-          pago: true,
-          data_pagamento: new Date().toISOString().split("T")[0],
-          valor_pago: despesa.valor,
-        });
-
-        if (error) throw error;
-      }
-
+      const nextPago = !(pagamentoExistente?.pago ?? false);
+      await upsertPagamento(despesa.id, mesView, anoView, {
+        pago: nextPago,
+        data_pagamento: nextPago
+          ? new Date().toISOString().split("T")[0]
+          : null,
+        valor_pago: nextPago ? despesa.valor : null,
+      });
       loadPagamentos();
     } catch (err) {
       console.error("Erro ao atualizar pagamento:", err);

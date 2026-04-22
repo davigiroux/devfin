@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { registerSchema } from '@/lib/validations/auth'
 import { Input } from '@/components/ui'
+import { registerUser } from './actions'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -15,7 +16,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,7 +23,6 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      // Validar inputs
       const validatedData = registerSchema.parse({
         email,
         password,
@@ -31,27 +30,26 @@ export default function RegisterPage() {
         nome_completo: nomeCompleto,
       })
 
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: validatedData.email,
-        password: validatedData.password,
-        options: {
-          data: {
-            nome_completo: validatedData.nome_completo,
-          },
-        },
-      })
-
-      if (signUpError) {
-        setError(signUpError.message)
+      const result = await registerUser(validatedData)
+      if (!result.ok) {
+        setError(result.error)
         setLoading(false)
         return
       }
 
-      if (data.user) {
-        // Redirecionar para o dashboard
-        router.push('/dashboard')
-        router.refresh()
+      const signInResult = await signIn('credentials', {
+        email: validatedData.email,
+        password: validatedData.password,
+        redirect: false,
+      })
+      if (!signInResult || signInResult.error) {
+        setError('Conta criada, mas falha ao entrar. Faça login manualmente.')
+        setLoading(false)
+        return
       }
+
+      router.push('/dashboard')
+      router.refresh()
     } catch (err) {
       if (err && typeof err === 'object' && 'errors' in err) {
         setError((err as { errors: { message: string }[] }).errors[0].message)

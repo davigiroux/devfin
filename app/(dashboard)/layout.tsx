@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { auth, signOut } from '@/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,14 +9,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const session = await auth()
+  if (!session?.user) {
     redirect('/login')
   }
+  const user = session.user
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +54,12 @@ export default async function DashboardLayout({
             <div className="flex items-center space-x-4">
               <ThemeToggle />
               <span className="text-sm text-muted-foreground">{user.email}</span>
-              <form action="/api/auth/signout" method="post">
+              <form
+                action={async () => {
+                  'use server'
+                  await signOut({ redirectTo: '/login' })
+                }}
+              >
                 <button
                   type="submit"
                   className="text-sm text-muted-foreground hover:text-foreground"

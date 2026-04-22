@@ -1,6 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
+import { asc, desc, eq } from 'drizzle-orm'
+import { db } from '@/lib/db/client'
+import { usuarios, faturamentos as faturamentosT, despesas_mensais } from '@/lib/db/schema'
 import YearSummaryCards from '@/components/dashboard/YearSummaryCards'
 import LastFaturamentosTable from '@/components/dashboard/LastFaturamentosTable'
 import QuarterlyView from '@/components/dashboard/QuarterlyView'
@@ -11,31 +15,27 @@ export const metadata: Metadata = {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+  const userId = session.user.id
 
-  // Fetch user data
-  const { data: userData } = await supabase
-    .from('usuarios')
-    .select('*')
-    .eq('id', user!.id)
-    .single()
+  const [userData] = await db
+    .select()
+    .from(usuarios)
+    .where(eq(usuarios.id, userId))
+    .limit(1)
 
-  // Fetch all faturamentos
-  const { data: faturamentos } = await supabase
-    .from('faturamentos')
-    .select('*')
-    .eq('usuario_id', user!.id)
-    .order('data', { ascending: true })
+  const faturamentos = await db
+    .select()
+    .from(faturamentosT)
+    .where(eq(faturamentosT.usuario_id, userId))
+    .orderBy(asc(faturamentosT.data))
 
-  // Fetch all despesas
-  const { data: despesas } = await supabase
-    .from('despesas_mensais')
-    .select('*')
-    .eq('usuario_id', user!.id)
-    .order('created_at', { ascending: false })
+  const despesas = await db
+    .select()
+    .from(despesas_mensais)
+    .where(eq(despesas_mensais.usuario_id, userId))
+    .orderBy(desc(despesas_mensais.created_at))
 
   return (
     <div className="space-y-8">

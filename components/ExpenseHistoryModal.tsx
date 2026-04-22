@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { DespesaMensal, PagamentoDespesa } from '@/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { loadExpenseHistory } from './ExpenseHistoryModal.actions'
 
 interface ExpenseHistoryModalProps {
   despesaId: string
@@ -16,8 +16,6 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
   const [pagamentos, setPagamentos] = useState<PagamentoDespesa[]>([])
   const [loading, setLoading] = useState(true)
 
-  const supabase = createClient()
-
   useEffect(() => {
     loadHistory()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -25,62 +23,9 @@ export default function ExpenseHistoryModal({ despesaId, onClose }: ExpenseHisto
 
   const loadHistory = async () => {
     try {
-      // Load all versions of this expense by following the version chain
-      const allVersions: DespesaMensal[] = []
-
-      // First, get the current expense
-      const { data: currentExpense, error: currentError } = await supabase
-        .from('despesas_mensais')
-        .select('*')
-        .eq('id', despesaId)
-        .single()
-
-      if (currentError) throw currentError
-      if (!currentExpense) return
-
-      allVersions.push(currentExpense)
-
-      // Then, get all previous versions
-      let currentId = currentExpense.previous_version_id
-      while (currentId) {
-        const { data: prevExpense, error: prevError } = await supabase
-          .from('despesas_mensais')
-          .select('*')
-          .eq('id', currentId)
-          .single()
-
-        if (prevError || !prevExpense) break
-
-        allVersions.push(prevExpense)
-        currentId = prevExpense.previous_version_id
-      }
-
-      // Also get all future versions (where this expense is the previous_version_id)
-      const { data: futureVersions, error: futureError } = await supabase
-        .from('despesas_mensais')
-        .select('*')
-        .eq('previous_version_id', despesaId)
-
-      if (!futureError && futureVersions) {
-        allVersions.push(...futureVersions)
-      }
-
-      // Sort by version number descending (newest first)
-      allVersions.sort((a, b) => b.version - a.version)
-      setVersions(allVersions)
-
-      // Load all payments for all versions of this expense
-      const allVersionIds = allVersions.map(v => v.id)
-      const { data: pagamentosData, error: pagamentosError } = await supabase
-        .from('pagamentos_despesas')
-        .select('*')
-        .in('despesa_id', allVersionIds)
-        .order('ano_referencia', { ascending: false })
-        .order('mes_referencia', { ascending: false })
-
-      if (pagamentosError) throw pagamentosError
-
-      setPagamentos(pagamentosData || [])
+      const { versions, pagamentos } = await loadExpenseHistory(despesaId)
+      setVersions(versions as DespesaMensal[])
+      setPagamentos(pagamentos as PagamentoDespesa[])
     } catch (err) {
       console.error('Erro ao carregar histórico:', err)
     } finally {

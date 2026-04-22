@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -14,7 +14,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,24 +21,22 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Validar inputs
       const validatedData = loginSchema.parse({ email, password })
 
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const result = await signIn('credentials', {
         email: validatedData.email,
         password: validatedData.password,
+        redirect: false,
       })
 
-      if (signInError) {
-        setError(signInError.message)
+      if (!result || result.error) {
+        setError('Email ou senha inválidos')
         setLoading(false)
         return
       }
 
-      if (data.user) {
-        router.push('/dashboard')
-        router.refresh()
-      }
+      router.push('/dashboard')
+      router.refresh()
     } catch (err) {
       if (err && typeof err === 'object' && 'errors' in err) {
         setError((err as { errors: { message: string }[] }).errors[0].message)
