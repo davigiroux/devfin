@@ -4,6 +4,7 @@ import type { NextAuthConfig } from 'next-auth'
 // Imported by middleware.ts so it stays in the edge runtime.
 // The full config (auth.ts) extends this with the Credentials provider.
 export default {
+  trustHost: true,
   pages: { signIn: '/login' },
   callbacks: {
     authorized({ auth, request }) {
